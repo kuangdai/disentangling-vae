@@ -146,6 +146,7 @@ class DSprites(DisentangledDataset):
     files = {"train": "dsprite_train.npz"}
     lat_names = ('shape', 'scale', 'orientation', 'posX', 'posY')
     lat_sizes = np.array([3, 6, 40, 32, 32])
+    lat_bases = np.array([245760, 40960, 1024, 32, 1])
     img_size = (1, 64, 64)
     background_color = COLOUR_BLACK
     lat_values = {'posX': np.array([0., 0.03225806, 0.06451613, 0.09677419, 0.12903226,
@@ -190,6 +191,18 @@ class DSprites(DisentangledDataset):
         os.makedirs(self.root)
         subprocess.check_call(["curl", "-L", type(self).urls["train"],
                                "--output", self.train_data])
+
+    def sample_latent(self, n_samples):
+        """ sample latent """
+        lat_idx = np.zeros((n_samples, len(self.lat_sizes)), dtype=int)
+        for lat_i, lat_size in enumerate(self.lat_sizes):
+            lat_idx[:, lat_i] = np.random.randint(lat_size, size=n_samples)
+        return lat_idx
+
+    def get_images_by_latent(self, lat_idx):
+        idx = np.dot(lat_idx, self.lat_bases).astype(int)
+        return torch.tensor(np.expand_dims(self.imgs[idx], axis=1),
+                            dtype=torch.float32)
 
     def __getitem__(self, idx):
         """Get the image of `idx`

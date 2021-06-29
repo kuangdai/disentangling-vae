@@ -14,6 +14,10 @@ from disvae.models.losses import get_loss_f
 from disvae.utils.math import log_density_gaussian
 from disvae.utils.modelIO import save_metadata
 
+from sklearn.linear_model import SGDClassifier
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import make_pipeline
+
 TEST_LOSSES_FILE = "test_losses.log"
 METRICS_FILENAME = "metrics.log"
 METRIC_HELPERS_FILE = "metric_helpers.pth"
@@ -156,7 +160,74 @@ class Evaluator:
         metrics = {'MIG': mig.item(), 'AAM': aam.item()}
         torch.save(metric_helpers, os.path.join(self.save_dir, METRIC_HELPERS_FILE))
 
+        self.logger.info("Linear-classifier-based disentanglement metric.")
+        metrics['LCM'] = self._lc_metric(dataloader)
+
         return metrics
+
+    def _lc_metric(self, dataloader, n_zdiff_per_y=5000, n_img_per_zdiff=256,
+                   random_seed=0):
+        """ linear-classifier-based disentanglement metric """
+        # create arrays
+        y_size = len(dataloader.dataset.lat_sizes)
+        z_diff_all = torch.zeros((y_size, n_zdiff_per_y, self.model.latent_dim))
+        y_all = torch.zeros((y_size, n_zdiff_per_y), dtype=int)
+
+        # compute for each y
+        for y in range(y_size):
+            self.logger.info(f"Computing z_diff for {dataloader.dataset.lat_names[y]}.")
+            # sample
+            n_samples = n_zdiff_per_y * n_img_per_zdiff
+            v1 = dataloader.dataset.sample_latent(n_samples)
+            v2 = dataloader.dataset.sample_latent(n_samples)
+            # keep y the same
+            v1[:, y] = v2[:, y]
+            # encode
+            z1 = torch.zeros((n_samples, self.model.latent_dim))
+            z2 = torch.zeros((n_samples, self.model.latent_dim))
+            batch_size = 10000
+            with torch.no_grad():
+                for start in trange(0, n_samples, batch_size,
+                                    leave=False, disable=not self.is_progress_bar):
+                    end = min(start + batch_size, n_samples)
+                    # get images
+                    x1b = dataloader.dataset.get_images_by_latent(v1[start:end])
+                    x2b = dataloader.dataset.get_images_by_latent(v2[start:end])
+                    z1b, _ = self.model.encoder(x1b.to(self.device))
+                    z2b, _ = self.model.encoder(x2b.to(self.device))
+                    z1[start:end] = z1b.to('cpu')
+                    z2[start:end] = z2b.to('cpu')
+            # z_diff
+            z_diff = torch.abs(z1 - z2)
+            # separate dimensions: n_zdiff_per_y, n_img_per_zdiff
+            z_diff = z_diff.reshape(
+                (n_zdiff_per_y, n_img_per_zdiff, self.model.latent_dim))
+            # take average over n_img_per_zdiff
+            z_diff_all[y, :, :] = torch.mean(z_diff, dim=1)
+            # y
+            y_all[y, :] = y
+
+        # merge dimensions: y_size, n_zdiff_per_y
+        z_diff_all = z_diff_all.reshape((y_size * n_zdiff_per_y,
+                                         self.model.latent_dim))
+        y_all = y_all.reshape((y_size * n_zdiff_per_y))
+
+        # shuffle z_diff and y consistently
+        shuffle_indices = torch.randperm(y_size * n_zdiff_per_y)
+        z_diff_all = z_diff_all[shuffle_indices]
+        y_all = y_all[shuffle_indices]
+
+        self.logger.info(f"Fitting linear classifier.")
+        # sklearn linear classifier
+        classifier = make_pipeline(
+            StandardScaler(),
+            SGDClassifier(loss="log", early_stopping=True,
+                          random_state=random_seed)
+        )
+        # train
+        classifier.fit(z_diff_all, y_all)
+        # score with test data
+        return classifier.score(z_diff_all, y_all)
 
     def _mutual_information_gap(self, sorted_mut_info, lat_sizes, storer=None):
         """Compute the mutual information gap as in [1].
@@ -273,7 +344,7 @@ class Evaluator:
         mean = params_zCX[0].unsqueeze(-1).expand(len_dataset, latent_dim, n_samples)
         log_var = params_zCX[1].unsqueeze(-1).expand(len_dataset, latent_dim, n_samples)
         log_N = math.log(len_dataset)
-        with trange(n_samples, leave=False, disable=self.is_progress_bar) as t:
+        with trange(n_samples, leave=False, disable=not self.is_progress_bar) as t:
             for k in range(0, n_samples, mini_batch_size):
                 # log q(z_j|x) for n_samples
                 idcs = slice(k, k + mini_batch_size)
