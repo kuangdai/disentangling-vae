@@ -186,8 +186,7 @@ class LossesLogger(object):
         self.logger.debug(header)
 
         # store filename for batch history
-        self._fname = file_path_name.split('.')[0]
-        self._suffix = file_path_name.split('.')[1]
+        self._fname = file_path_name
 
     def log(self, epoch, losses_storer):
         """Write to the log file """
@@ -198,7 +197,7 @@ class LossesLogger(object):
         # dump batch history
         batch_values = np.array(list(losses_storer.values())).T
         header = ' '.join(k for k in losses_storer.keys())
-        fname = self._fname + f'_epoch{epoch}.' + self._suffix
+        fname = self._fname[:-4] + f'_epoch{epoch}.log'
         np.savetxt(fname, batch_values, header=header)
 
 
