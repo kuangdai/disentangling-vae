@@ -15,7 +15,7 @@ if __name__ == '__main__':
     cmd_tmp = f'singularity exec {str(main_path)}/../torch.simg ' \
               f'python main.py bvae_dsprites/z%d_b%s_s{seed} -s {seed} ' \
               f'--checkpoint-every 25 -d dsprites -e 50 -b 256 --lr 0.01 ' \
-              f'-z %d -l betaH --betaH-B %s --is-metrics --no-test\n'
+              f'-z %d -l betaH --betaH-B %s --is-metrics --no-test --no-progress-bar\n'
 
     # job header
     with open(my_path / 'job_header', 'r') as f:
