@@ -4,6 +4,8 @@ import os
 from timeit import default_timer
 from collections import defaultdict
 
+import numpy as np
+
 from tqdm import trange
 import torch
 from torch.nn import functional as F
@@ -183,11 +185,21 @@ class LossesLogger(object):
         header = ",".join(["Epoch", "Loss", "Value"])
         self.logger.debug(header)
 
+        # store filename for batch history
+        self._fname = file_path_name.split('.')[0]
+        self._suffix = file_path_name.split('.')[1]
+
     def log(self, epoch, losses_storer):
         """Write to the log file """
         for k, v in losses_storer.items():
             log_string = ",".join(str(item) for item in [epoch, k, mean(v)])
             self.logger.debug(log_string)
+
+        # dump batch history
+        batch_values = np.array(list(losses_storer.values())).T
+        header = ' '.join(k for k in losses_storer.keys())
+        fname = self._fname + f'_epoch{epoch}.' + self._suffix
+        np.savetxt(fname, batch_values, header=header)
 
 
 # HELPERS

@@ -68,7 +68,7 @@ class BaseLoss(abc.ABC):
         Number of annealing steps where gradually adding the regularisation.
     """
 
-    def __init__(self, record_loss_every=50, rec_dist="bernoulli", steps_anneal=0):
+    def __init__(self, record_loss_every=1, rec_dist="bernoulli", steps_anneal=0):
         self.n_train_steps = 0
         self.record_loss_every = record_loss_every
         self.rec_dist = rec_dist
@@ -106,7 +106,7 @@ class BaseLoss(abc.ABC):
         if is_train:
             self.n_train_steps += 1
 
-        if not is_train or self.n_train_steps % self.record_loss_every == 1:
+        if not is_train or (self.n_train_steps - 1) % self.record_loss_every == 0:
             storer = storer
         else:
             storer = None
