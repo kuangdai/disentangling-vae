@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH -p pearl
 #SBATCH --job-name=@JNAME@
-#SBATCH --time=1-05:00:00
+#SBATCH --time=2-00:00:00
 #SBATCH -n 1
 #SBATCH --gres=gpu:1
 #SBATCH --output=@OUTPUT@
