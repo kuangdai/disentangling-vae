@@ -32,3 +32,14 @@ if __name__ == '__main__':
                 unnormalized_beta = beta * 64 * 64 / nlat
                 cmd = cmd_tmp % (nlat, str(beta), nlat, str(unnormalized_beta))
                 f.write(cmd)
+
+    # submit
+    with open(my_path / 'jobs/submit0.sh', 'w') as f:
+        for ibeta, beta in enumerate(betas):
+            if ibeta % 2 == 0:
+                f.write(f'sbatch {str(my_path)}/jobs/beta{ibeta}.job\n')
+
+    with open(my_path / 'jobs/submit1.sh', 'w') as f:
+        for ibeta, beta in enumerate(betas):
+            if ibeta % 2 == 1:
+                f.write(f'sbatch {str(my_path)}/jobs/beta{ibeta}.job\n')
