@@ -248,7 +248,8 @@ class EpsilonLoss(BaseLoss):
             # reset
             self.n_weight_updates_since_last_lbd_update = 0
         else:
-            self.n_weight_updates_since_last_lbd_update += 1
+            if self.n_total_updates >= self.warmup:
+                self.n_weight_updates_since_last_lbd_update += 1
 
         # record
         if storer is not None:
