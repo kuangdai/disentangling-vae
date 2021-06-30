@@ -195,7 +195,7 @@ class EpsilonLoss(BaseLoss):
         storer = self._pre_call(is_train, storer)
 
         # training lambda flag
-        training_lbd = (total_batch + 1) % self.L == 0 and total_batch > self.warmup
+        training_lbd = total_batch % self.L == 0 and total_batch > self.warmup
         if storer is not None:
             storer['training_lambda'].append(training_lbd * 1.)
 
@@ -230,9 +230,6 @@ class EpsilonLoss(BaseLoss):
         lbd_lr = self.lbd_lr0 / (1 + self.lbd_lr_decay_rate *
                                  self.n_lbd_train_steps / self.lbd_lr_decay_step)
         if training_lbd:
-            # update lbd steps
-            self.n_lbd_train_steps += 1
-
             # update lda
             if self.eps_recon:
                 self.lbd += (F.relu(rec_loss - self.eps) * lbd_lr).item()
@@ -242,6 +239,9 @@ class EpsilonLoss(BaseLoss):
             # update L
             if self.n_lbd_train_steps % self.interval_incr_L == 0:
                 self.L += self.incr_L
+
+            # update lbd steps
+            self.n_lbd_train_steps += 1
 
         # record
         if storer is not None:
