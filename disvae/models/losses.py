@@ -185,20 +185,19 @@ class EpsilonLoss(BaseLoss):
         self.lbd_lr_decay_step = 1.
 
         # to be updated in training
+        self.n_total_updates = 0
+        self.n_lbd_updates = 0
+        self.n_weight_updates_since_last_lbd_update = 0
         self.lbd = 0.
         self.L = self.L0
-        self.n_lbd_train_steps = 0
 
     def __call__(self, data, recon_data, latent_dist, is_train, storer, **kwargs):
-        if is_train:
-            total_batch = kwargs['total_batch']
-        else:
-            total_batch = -1  # testing, always disable train lambda
-
         storer = self._pre_call(is_train, storer)
 
         # training lambda flag
-        training_lbd = (total_batch - self.n_lbd_train_steps) % self.L == 0 and total_batch >= self.warmup
+        training_lbd = self.n_weight_updates_since_last_lbd_update == self.L and \
+                       self.n_total_updates >= self.warmup
+        self.n_total_updates += 1
         if storer is not None:
             storer['training_lambda'].append(training_lbd * 1.)
 
@@ -231,7 +230,7 @@ class EpsilonLoss(BaseLoss):
         #################
         # lbd learning rate
         lbd_lr = self.lbd_lr0 / (1 + self.lbd_lr_decay_rate *
-                                 self.n_lbd_train_steps / self.lbd_lr_decay_step)
+                                 self.n_lbd_updates / self.lbd_lr_decay_step)
         if training_lbd:
             # update lda
             if self.eps_recon:
@@ -240,11 +239,14 @@ class EpsilonLoss(BaseLoss):
                 self.lbd += (F.relu(kl_loss - self.eps) * lbd_lr).item()
 
             # update L
-            if self.n_lbd_train_steps % self.interval_incr_L == 0:
+            if self.n_lbd_updates % self.interval_incr_L == 0:
                 self.L += self.incr_L
 
             # update lbd steps
-            self.n_lbd_train_steps += 1
+            self.n_lbd_updates += 1
+
+            # reset
+            self.n_weight_updates_since_last_lbd_update = 0
 
         # record
         if storer is not None:
