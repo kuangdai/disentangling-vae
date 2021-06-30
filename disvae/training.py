@@ -125,14 +125,9 @@ class Trainer():
         epoch_loss = 0.
         kwargs = dict(desc="Epoch {}".format(epoch + 1), leave=False,
                       disable=not self.is_progress_bar)
-        # for eps-vae
-        n_batches_per_epoch = len(range(0, len(data_loader),
-                                        data_loader.batch_size))
         with trange(len(data_loader), **kwargs) as t:
-            for i_batch, (data, _) in enumerate(data_loader):
-                # for eps-vae
-                total_batch = n_batches_per_epoch * epoch + i_batch
-                iter_loss = self._train_iteration(data, storer, total_batch)
+            for _, (data, _) in enumerate(data_loader):
+                iter_loss = self._train_iteration(data, storer)
                 epoch_loss += iter_loss
 
                 t.set_postfix(loss=iter_loss)
@@ -141,7 +136,7 @@ class Trainer():
         mean_epoch_loss = epoch_loss / len(data_loader)
         return mean_epoch_loss
 
-    def _train_iteration(self, data, storer, total_batch):
+    def _train_iteration(self, data, storer):
         """
         Trains the model for one iteration on a batch of data.
 
@@ -159,8 +154,7 @@ class Trainer():
         try:
             recon_batch, latent_dist, latent_sample = self.model(data)
             loss = self.loss_f(data, recon_batch, latent_dist, self.model.training,
-                               storer, latent_sample=latent_sample,
-                               total_batch=total_batch)  # for eps-vae
+                               storer, latent_sample=latent_sample)
             self.optimizer.zero_grad()
             try:
                 loss.backward()
