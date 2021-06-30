@@ -195,7 +195,7 @@ class EpsilonLoss(BaseLoss):
         storer = self._pre_call(is_train, storer)
 
         # training lambda flag
-        training_lbd = (total_batch + 1) % self.L == 0 and total_batch < self.warmup
+        training_lbd = (total_batch + 1) % self.L == 0 and total_batch > self.warmup
         if storer is not None:
             storer['training_lambda'].append(training_lbd * 1.)
 
