@@ -190,7 +190,10 @@ class EpsilonLoss(BaseLoss):
         self.n_lbd_train_steps = 0
 
     def __call__(self, data, recon_data, latent_dist, is_train, storer, **kwargs):
-        total_batch = kwargs['total_batch']
+        try:
+            total_batch = kwargs['total_batch']
+        except KeyError:
+            total_batch = -1  # testing
 
         storer = self._pre_call(is_train, storer)
 
