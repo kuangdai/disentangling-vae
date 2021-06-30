@@ -127,6 +127,24 @@ def parse_arguments(args_to_parse):
                         default=default_config['btcvae_B'],
                         help="Weight of the TC term (beta in the paper).")
 
+    betaH = parser.add_argument_group('epsvae specific parameters')
+    betaH.add_argument('--epsvae-constrain-reconstruction', type=bool,
+                       default=False,
+                       help="Constrain reconstruction loss "
+                            "(otherwise constrain KL loss).")
+    betaH.add_argument('--epsvae-epsilon', type=float,
+                       default=1., help="Epsilon.")
+    betaH.add_argument('--epsvae-warmup', type=int,
+                       default=100, help="Warmup steps.")
+    betaH.add_argument('--epsvae-L0', type=int,
+                       default=1, help="Initial L.")
+    betaH.add_argument('--epsvae-incr-L', type=int,
+                       default=1, help="Increment of L.")
+    betaH.add_argument('--epsvae-interval-incr-L', type=int,
+                       default=2, help="Interval to increment L.")
+    betaH.add_argument('--epsvae-lambda-lr', type=float,
+                       default=.01, help="Initial learning rate for lambda.")
+
     # Learning options
     evaluation = parser.add_argument_group('Evaluation specific options')
     evaluation.add_argument('--is-eval-only', action='store_true',
