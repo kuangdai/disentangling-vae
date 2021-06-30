@@ -197,7 +197,6 @@ class EpsilonLoss(BaseLoss):
         # training lambda flag
         training_lbd = self.n_weight_updates_since_last_lbd_update == self.L and \
                        self.n_total_updates >= self.warmup
-        self.n_total_updates += 1
         if storer is not None:
             storer['training_lambda'].append(training_lbd * 1.)
 
@@ -238,12 +237,12 @@ class EpsilonLoss(BaseLoss):
             else:
                 self.lbd += (F.relu(kl_loss - self.eps) * lbd_lr).item()
 
+            # update lbd steps
+            self.n_lbd_updates += 1
+
             # update L
             if self.n_lbd_updates % self.interval_incr_L == 0:
                 self.L += self.incr_L
-
-            # update lbd steps
-            self.n_lbd_updates += 1
 
             # reset
             self.n_weight_updates_since_last_lbd_update = 0
@@ -256,6 +255,8 @@ class EpsilonLoss(BaseLoss):
             storer['lambda'].append(self.lbd)
             storer['lambda_lr'].append(lbd_lr)
 
+        # must be placed here
+        self.n_total_updates += 1
         return loss
 
 
