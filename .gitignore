@@ -1,7 +1,6 @@
 # directories
 venv*/
 data/
-results/*
 notebooks/
 old*
 trained_models/
