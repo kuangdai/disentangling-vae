@@ -26,14 +26,15 @@ def read_loss_from_file(log_file_path, loss_to_fetch):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("-f", "--folder", type=str, help="parent folder of the training results")
+    parser.add_argument("-f", "--folder", required=True, type=str, help="parent folder of the training results")
+    args = parser.parse_args()
 
     # absolute path
     my_path = Path(__file__).parent.resolve().expanduser()
     main_path = my_path.parent.parent
 
     # get loss data
-    recon_loss = read_loss_from_file(Path(main_path) / 'results' / 'train_losses.log', 'recon_loss')
+    recon_loss = read_loss_from_file(Path(main_path) / 'results' / args.folder / 'train_losses.log', 'recon_loss')
     print("recon: \n", recon_loss)
 
     kl_loss = read_loss_from_file(Path(main_path) / 'results' / 'train_losses.log', 'kl_loss')
