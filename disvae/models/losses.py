@@ -14,7 +14,7 @@ from disvae.utils.math import (log_density_gaussian, log_importance_weight_matri
                                matrix_log_density_gaussian)
 
 
-LOSSES = ["VAE", "betaH", "betaB", "factor", "btcvae", "epsvae"]
+LOSSES = ["VAE", "betaH", "betaB", "factor", "btcvae", "epsvae", "mepsvae"]
 RECON_DIST = ["bernoulli", "laplace", "gaussian"]
 
 
@@ -53,6 +53,17 @@ def get_loss_f(loss_name, **kwargs_parse):
                            interval_incr_L=kwargs_parse['epsvae_interval_incr_L'],
                            lbd_lr0=kwargs_parse['epsvae_lambda_lr'],
                            **kwargs_all)
+    elif loss_name == "mepsvae":
+        return MultiEpsilonLoss(kwargs_parse["n_data"],
+                                eps_alpha=kwargs_parse['mepsvae_epsilon_alpha'],
+                                eps_beta=kwargs_parse['mepsvae_epsilon_beta'],
+                                eps_gamma=kwargs_parse['mepsvae_epsilon_gamma'],
+                                warmup=kwargs_parse['mepsvae_warmup'],
+                                L0=kwargs_parse['mepsvae_L0'],
+                                incr_L=kwargs_parse['mepsvae_incr_L'],
+                                interval_incr_L=kwargs_parse['mepsvae_interval_incr_L'],
+                                lbd_lr0=kwargs_parse['mepsvae_lambda_lr'],
+                                **kwargs_all)
     else:
         assert loss_name not in LOSSES
         raise ValueError("Uknown loss : {}".format(loss_name))
@@ -253,6 +264,130 @@ class EpsilonLoss(BaseLoss):
         # record
         if storer is not None:
             storer['lambda'].append(self.lbd)
+            storer['lambda_lr'].append(lbd_lr)
+
+        # must be placed here
+        if is_train:
+            self.n_total_updates += 1
+        return loss
+
+
+class MultiEpsilonLoss(BaseLoss):
+    """
+    Epsilon loss, multiple constraints on alpha, beta, gamma terms
+    """
+    def __init__(self, n_data, eps_alpha=.1, eps_beta=.1, eps_gamma=.1,
+                 is_mss=True, warmup=100, L0=1, incr_L=1, interval_incr_L=2,
+                 lbd_lr0=0.01, **kwargs):
+        super().__init__(**kwargs)
+        # parameters
+        self.n_data = n_data
+        self.eps_alpha = eps_alpha
+        self.eps_beta = eps_beta
+        self.eps_gamma = eps_gamma
+        self.is_mss = is_mss
+        self.warmup = warmup
+        self.L0 = L0
+        self.incr_L = incr_L
+        self.interval_incr_L = interval_incr_L
+        self.lbd_lr0 = lbd_lr0
+
+        # hardcoded
+        self.lbd_lr_decay_rate = 1e-3
+        self.lbd_lr_decay_step = 1.
+
+        # to be updated in training
+        self.n_total_updates = 0
+        self.n_lbd_updates = 0
+        self.n_weight_updates_since_last_lbd_update = 0
+        self.lbd_alpha = 0.
+        self.lbd_beta = 0.
+        self.lbd_gamma = 0.
+        self.L = self.L0
+
+    def __call__(self, data, recon_data, latent_dist, is_train, storer,
+                 latent_sample=None):
+        storer = self._pre_call(is_train, storer)
+
+        # training lambda flag
+        training_lbd = self.n_weight_updates_since_last_lbd_update == self.L and \
+                       self.n_total_updates >= self.warmup and is_train
+        if storer is not None:
+            storer['training_lambda'].append(training_lbd * 1.)
+
+        ################
+        # compute loss #
+        ################
+        # rec and KL
+        if training_lbd:
+            with torch.no_grad():
+                # update lbd, so no_grad for weights
+                rec_loss = _reconstruction_loss(data, recon_data,
+                                                storer=storer,
+                                                distribution=self.rec_dist)
+                log_pz, log_qz, log_prod_qzi, log_q_zCx = _get_log_pz_qz_prodzi_qzCx(
+                    latent_sample,
+                    latent_dist,
+                    self.n_data,
+                    is_mss=self.is_mss)
+                mi_loss = (log_q_zCx - log_qz).mean()
+                tc_loss = (log_qz - log_prod_qzi).mean()
+                dw_kl_loss = (log_prod_qzi - log_pz).mean()
+        else:
+            rec_loss = _reconstruction_loss(data, recon_data,
+                                            storer=storer,
+                                            distribution=self.rec_dist)
+            log_pz, log_qz, log_prod_qzi, log_q_zCx = _get_log_pz_qz_prodzi_qzCx(
+                latent_sample,
+                latent_dist,
+                self.n_data,
+                is_mss=self.is_mss)
+            mi_loss = (log_q_zCx - log_qz).mean()
+            tc_loss = (log_qz - log_prod_qzi).mean()
+            dw_kl_loss = (log_prod_qzi - log_pz).mean()
+
+        # loss
+        loss = rec_loss + (self.lbd_alpha * F.relu(mi_loss - self.eps_alpha) +
+                           self.lbd_beta * F.relu(tc_loss - self.eps_beta) +
+                           self.lbd_gamma * F.relu(dw_kl_loss - self.eps_gamma))
+        if storer is not None:
+            storer['loss'].append(loss.item())
+            storer['mi_loss'].append(mi_loss.item())
+            storer['tc_loss'].append(tc_loss.item())
+            storer['dw_kl_loss'].append(dw_kl_loss.item())
+            # computing this for storing and comparaison purposes
+            _ = _kl_normal_loss(*latent_dist, storer)
+
+        #################
+        # update Lambda #
+        #################
+        # lbd learning rate
+        lbd_lr = self.lbd_lr0 / (1 + self.lbd_lr_decay_rate *
+                                 self.n_lbd_updates / self.lbd_lr_decay_step)
+        if training_lbd:
+            # update lda
+            self.lbd_alpha += (F.relu(mi_loss - self.eps_alpha) * lbd_lr).item()
+            self.lbd_beta += (F.relu(tc_loss - self.eps_beta) * lbd_lr).item()
+            self.lbd_gamma += (F.relu(dw_kl_loss - self.eps_gamma) * lbd_lr).item()
+
+            # update lbd steps
+            self.n_lbd_updates += 1
+
+            # update L
+            if self.n_lbd_updates % self.interval_incr_L == 0:
+                self.L += self.incr_L
+
+            # reset
+            self.n_weight_updates_since_last_lbd_update = 0
+        else:
+            if self.n_total_updates >= self.warmup and is_train:
+                self.n_weight_updates_since_last_lbd_update += 1
+
+        # record
+        if storer is not None:
+            storer['lambda_alpha'].append(self.lbd_alpha)
+            storer['lambda_beta'].append(self.lbd_beta)
+            storer['lambda_gamma'].append(self.lbd_gamma)
             storer['lambda_lr'].append(lbd_lr)
 
         # must be placed here

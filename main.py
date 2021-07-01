@@ -127,23 +127,41 @@ def parse_arguments(args_to_parse):
                         default=default_config['btcvae_B'],
                         help="Weight of the TC term (beta in the paper).")
 
-    betaH = parser.add_argument_group('epsvae specific parameters')
-    betaH.add_argument('--epsvae-constrain-reconstruction', type=bool,
-                       default=False,
-                       help="Constrain reconstruction loss "
-                            "(otherwise constrain KL loss).")
-    betaH.add_argument('--epsvae-epsilon', type=float,
-                       default=1., help="Epsilon.")
-    betaH.add_argument('--epsvae-warmup', type=int,
-                       default=100, help="Warmup steps.")
-    betaH.add_argument('--epsvae-L0', type=int,
-                       default=1, help="Initial L.")
-    betaH.add_argument('--epsvae-incr-L', type=int,
-                       default=1, help="Increment of L.")
-    betaH.add_argument('--epsvae-interval-incr-L', type=int,
-                       default=2, help="Interval to increment L.")
-    betaH.add_argument('--epsvae-lambda-lr', type=float,
-                       default=.01, help="Initial learning rate for lambda.")
+    epsvae = parser.add_argument_group('epsvae specific parameters')
+    epsvae.add_argument('--epsvae-constrain-reconstruction', type=bool,
+                        default=False,
+                        help="Constrain reconstruction loss "
+                             "(otherwise constrain KL loss).")
+    epsvae.add_argument('--epsvae-epsilon', type=float,
+                        default=1., help="Epsilon.")
+    epsvae.add_argument('--epsvae-warmup', type=int,
+                        default=100, help="Warmup steps.")
+    epsvae.add_argument('--epsvae-L0', type=int,
+                        default=1, help="Initial L.")
+    epsvae.add_argument('--epsvae-incr-L', type=int,
+                        default=1, help="Increment of L.")
+    epsvae.add_argument('--epsvae-interval-incr-L', type=int,
+                        default=2, help="Interval to increment L.")
+    epsvae.add_argument('--epsvae-lambda-lr', type=float,
+                         default=.01, help="Initial learning rate for lambda.")
+
+    mepsvae = parser.add_argument_group('mepsvae specific parameters')
+    mepsvae.add_argument('--mepsvae-epsilon-alpha', type=float,
+                         default=1., help="Epsilon for alpha (MI) term.")
+    mepsvae.add_argument('--mepsvae-epsilon-beta', type=float,
+                         default=1., help="Epsilon for beta (TC) term.")
+    mepsvae.add_argument('--mepsvae-epsilon-gamma', type=float,
+                         default=1., help="Epsilon for gamma (DW-KL) term.")
+    mepsvae.add_argument('--mepsvae-warmup', type=int,
+                         default=100, help="Warmup steps.")
+    mepsvae.add_argument('--mepsvae-L0', type=int,
+                         default=1, help="Initial L.")
+    mepsvae.add_argument('--mepsvae-incr-L', type=int,
+                         default=1, help="Increment of L.")
+    mepsvae.add_argument('--mepsvae-interval-incr-L', type=int,
+                         default=2, help="Interval to increment L.")
+    mepsvae.add_argument('--mepsvae-lambda-lr', type=float,
+                         default=.01, help="Initial learning rate for lambda.")
 
     # Learning options
     evaluation = parser.add_argument_group('Evaluation specific options')
