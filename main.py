@@ -141,9 +141,9 @@ def parse_arguments(args_to_parse):
     epsvae.add_argument('--epsvae-incr-L', type=int,
                         default=1, help="Increment of L.")
     epsvae.add_argument('--epsvae-interval-incr-L', type=int,
-                        default=2, help="Interval to increment L.")
+                        default=4, help="Interval to increment L.")
     epsvae.add_argument('--epsvae-lambda-lr', type=float,
-                         default=.01, help="Initial learning rate for lambda.")
+                        default=5e-4, help="Initial learning rate for lambda.")
 
     mepsvae = parser.add_argument_group('mepsvae specific parameters')
     mepsvae.add_argument('--mepsvae-epsilon-alpha', type=float,
@@ -159,9 +159,9 @@ def parse_arguments(args_to_parse):
     mepsvae.add_argument('--mepsvae-incr-L', type=int,
                          default=1, help="Increment of L.")
     mepsvae.add_argument('--mepsvae-interval-incr-L', type=int,
-                         default=2, help="Interval to increment L.")
+                         default=4, help="Interval to increment L.")
     mepsvae.add_argument('--mepsvae-lambda-lr', type=float,
-                         default=.01, help="Initial learning rate for lambda.")
+                         default=5e-4, help="Initial learning rate for lambda.")
 
     # Learning options
     evaluation = parser.add_argument_group('Evaluation specific options')
