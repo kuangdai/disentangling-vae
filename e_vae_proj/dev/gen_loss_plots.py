@@ -37,8 +37,8 @@ if __name__ == '__main__':
     recon_loss = read_loss_from_file(Path(main_path) / 'results' / args.folder / 'train_losses.log', 'recon_loss')
     print("recon: \n", recon_loss)
 
-    kl_loss = read_loss_from_file(Path(main_path) / 'results' / 'train_losses.log', 'kl_loss')
+    kl_loss = read_loss_from_file(Path(main_path) / 'results' / args.folder  / 'train_losses.log', 'kl_loss')
     print("kl: \n", kl_loss)
 
-    lambda_vals = read_loss_from_file(Path(main_path) / 'results' / 'train_losses.log', 'lambda')
+    lambda_vals = read_loss_from_file(Path(main_path) / 'results' / args.folder  / 'train_losses.log', 'lambda')
     print("lambda: \n", lambda_vals)
