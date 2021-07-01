@@ -7,7 +7,8 @@ if __name__ == '__main__':
     main_path = my_path.parent.parent
 
     # read
-    epsilons = np.loadtxt(my_path / 'grid_epsilons')
+    epsilons_recon = np.loadtxt(my_path / 'grid_epsilons_recon')
+    epsilons_kl = np.loadtxt(my_path / 'grid_epsilons_kl')
     nlats = np.loadtxt(my_path / 'grid_nlats')
     seed = 0
 
@@ -21,11 +22,11 @@ if __name__ == '__main__':
     with open(my_path / 'job_header', 'r') as f:
         job_header = f.read()
 
-    # jobs grouped by epsilon
-    for iepsilon, epsilon in enumerate(epsilons):
-        with open(my_path / f'jobs/epsilon{iepsilon}.job', 'w') as f:
-            h = job_header.replace('@JNAME@', f'bvae_dsprites_epsilon{iepsilon}')
-            h = h.replace('@OUTPUT@', str(my_path / f'jobs/epsilon{iepsilon}.slurm'))
+    # jobs for constrained kl, grouped by epsilon
+    for iepsilon, epsilon in enumerate(epsilons_kl):
+        with open(my_path / f'jobs/epsilon_kl{iepsilon}.job', 'w') as f:
+            h = job_header.replace('@JNAME@', f'evae_dsprites_epsilon_kl{iepsilon}')
+            h = h.replace('@OUTPUT@', str(my_path / f'jobs/epsilon_kl{iepsilon}.slurm'))
             h = h.replace('@MAINPATH@', str(main_path))
             f.write(h)
             for nlat in nlats:
@@ -33,13 +34,36 @@ if __name__ == '__main__':
                 cmd = cmd_tmp % (nlat, str(epsilon), nlat, str(unnormalized_epsilon))
                 f.write(cmd)
 
-    # submit
-    with open(my_path / 'jobs/submit0.sh', 'w') as f:
-        for iepsilon, epsilon in enumerate(epsilons):
-            if iepsilon % 2 == 0:
-                f.write(f'sbatch {str(my_path)}/jobs/epsilon{iepsilon}.job\n')
+    # jobs for constrained recon, grouped by epsilon
+    for iepsilon, epsilon in enumerate(epsilons_recon):
+        with open(my_path / f'jobs/epsilon_recon{iepsilon}.job', 'w') as f:
+            h = job_header.replace('@JNAME@', f'evae_dsprites_epsilon_recon{iepsilon}')
+            h = h.replace('@OUTPUT@', str(my_path / f'jobs/epsilon_recon{iepsilon}.slurm'))
+            h = h.replace('@MAINPATH@', str(main_path))
+            f.write(h)
+            for nlat in nlats:
+                unnormalized_epsilon = epsilon * 64 * 64 / nlat
+                cmd = cmd_tmp % (nlat, str(epsilon), nlat, str(unnormalized_epsilon))
+                f.write(cmd)
 
-    with open(my_path / 'jobs/submit1.sh', 'w') as f:
-        for iepsilon, epsilon in enumerate(epsilons):
+    # submit constrained kl
+    with open(my_path / 'jobs/submit0_kl.sh', 'w') as f:
+        for iepsilon, epsilon in enumerate(epsilons_kl):
+            if iepsilon % 2 == 0:
+                f.write(f'sbatch {str(my_path)}/jobs/epsilon_kl{iepsilon}.job\n')
+
+    with open(my_path / 'jobs/submit1_kl.sh', 'w') as f:
+        for iepsilon, epsilon in enumerate(epsilons_kl):
             if iepsilon % 2 == 1:
-                f.write(f'sbatch {str(my_path)}/jobs/epsilon{iepsilon}.job\n')
+                f.write(f'sbatch {str(my_path)}/jobs/epsilon_kl{iepsilon}.job\n')
+
+    # submit constrained recon
+    with open(my_path / 'jobs/submit0_recon.sh', 'w') as f:
+        for iepsilon, epsilon in enumerate(epsilons_recon):
+            if iepsilon % 2 == 0:
+                f.write(f'sbatch {str(my_path)}/jobs/epsilon_recon{iepsilon}.job\n')
+
+    with open(my_path / 'jobs/submit1_recon.sh', 'w') as f:
+        for iepsilon, epsilon in enumerate(epsilons_recon):
+            if iepsilon % 2 == 1:
+                f.write(f'sbatch {str(my_path)}/jobs/epsilon_recon{iepsilon}.job\n')
