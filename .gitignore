@@ -43,3 +43,4 @@ __pycache__/
 
 # jobs
 *.job
+hist_*.npy
