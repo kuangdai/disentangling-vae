@@ -58,7 +58,6 @@ if __name__ == '__main__':
             sorted_mut_info = torch.sort(mut_info, dim=1, descending=True)[
                 0].clamp(min=0)
             AAD[ibeta, inlat] = axis_aligned_decay(sorted_mut_info)
-            print(f'DONE: {res_dir}')
 
             # collect last epoch
             epoch = epochs - 1
@@ -67,7 +66,7 @@ if __name__ == '__main__':
             REC[ibeta, inlat] = data[:, 0].mean()
             KL[ibeta, inlat] = data[:, 1].mean()
             LOSS[ibeta, inlat] = data[:, -1].mean()
-            print(f'DONE: {epoch}', end='\r')
+            print(f'DONE: {res_dir}')
 
     # save
     np.save(my_path / f'results/metric_LCM.npy', LCM)
