@@ -46,7 +46,7 @@ if __name__ == '__main__':
     LOSS = np.zeros((len(epses), len(nlats)))
     for ieps, eps in enumerate(epses):
         for inlat, nlat in enumerate(nlats):
-            res_dir = main_path / (f'results/bvae_esprites_{cons}/'
+            res_dir = main_path / (f'results/evae_dsprites_{cons}/'
                                    f'z%d_e%s_s{seed}/' % (nlat, str(eps)))
             try:
                 # collect metrics
