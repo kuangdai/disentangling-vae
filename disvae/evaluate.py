@@ -155,9 +155,11 @@ class Evaluator:
 
         metric_helpers = {'marginal_entropies': H_z, 'cond_entropies': H_zCv}
         mig = self._mutual_information_gap(sorted_mut_info, lat_sizes, storer=metric_helpers)
+        mid = self._mutual_information_decay(sorted_mut_info, lat_sizes,
+                                             storer=metric_helpers)
         aam = self._axis_aligned_metric(sorted_mut_info, storer=metric_helpers)
 
-        metrics = {'MIG': mig.item(), 'AAM': aam.item()}
+        metrics = {'MIG': mig.item(), 'MID': mid.item(), 'AAM': aam.item()}
         torch.save(metric_helpers, os.path.join(self.save_dir, METRIC_HELPERS_FILE))
 
         self.logger.info("Linear-classifier-based disentanglement metric.")
@@ -243,6 +245,7 @@ class Evaluator:
         # then H(v_k) = - |V_k|/|V_k| log(1/|V_k|) = log(|V_k|)
         H_v = torch.from_numpy(lat_sizes).float().log()
         mig_k = delta_mut_info / H_v
+        mig_k[torch.isnan(mig_k)] = 0
         mig = mig_k.mean()  # mean over factor of variations
 
         if storer is not None:
@@ -250,6 +253,26 @@ class Evaluator:
             storer["mig"] = mig
 
         return mig
+
+    def _mutual_information_decay(self, sorted_mut_info, lat_sizes, storer=None):
+        """Compute the mutual information decay."""
+        H_v = torch.from_numpy(lat_sizes).float().log()
+
+        n = sorted_mut_info.shape[1]
+        KL_amp = np.log(n)
+        first = sorted_mut_info[:, 0] / sorted_mut_info[:, :n].sum(dim=1)
+        KL_first = - torch.log(first)
+        mid_k = 1 - KL_first / KL_amp
+
+        mid_k *= sorted_mut_info[:, 0] / H_v
+        mid_k[torch.isnan(mid_k)] = 0
+        mid = mid_k.mean()
+
+        if storer is not None:
+            storer["mid_k"] = mid_k
+            storer["mid"] = mid
+
+        return mid
 
     def _axis_aligned_metric(self, sorted_mut_info, storer=None):
         """Compute the proposed axis aligned metrics."""
