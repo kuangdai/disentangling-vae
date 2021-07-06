@@ -12,6 +12,7 @@ From: nvcr.io/nvidia/pytorch:21.05-py3
     pip install Pillow
     pip install tqdm
     pip install scikit-learn
+    pip --no-cache-dir --disable-pip-version-check install mpi4py
 %environment
     export LC_ALL=C
 %runscript
