@@ -12,15 +12,13 @@ sys.path.insert(1, str(main_path))
 from main import parse_arguments, main
 
 
-def main_device(argv, device=0, info_only=False, cuda=True):
+def main_device(argv, device=0, cuda=True):
     if cuda:
         torch.cuda.set_device(device)
     args = parse_arguments(argv.split(' '))
-    if info_only:
-        name = torch.cuda.get_device_name(device) if cuda else 'cpu'
-        print(f"DEVICE {device} <{name}>: {argv}")
-    else:
-        main(args)
+    name = torch.cuda.get_device_name(device) if cuda else 'cpu'
+    print(f"DEVICE {device} <{name}>: {argv}")
+    main(args)
 
 
 if __name__ == "__main__":
