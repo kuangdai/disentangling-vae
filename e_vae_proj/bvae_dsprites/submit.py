@@ -28,6 +28,7 @@ if __name__ == "__main__":
     comm = MPI.COMM_WORLD
     rank = comm.Get_rank()
     size = comm.Get_size()
+    assert size == torch.cuda.device_count()
 
     # read
     betas = np.loadtxt('grid_betas')
@@ -50,4 +51,4 @@ if __name__ == "__main__":
                 unnormalized_beta = beta * 64 * 64 / nlat
                 argv = argv_tmp % (
                     nlat, str(beta), nlat, str(unnormalized_beta))
-                main_device(argv, device=-1, info_only=True, cuda=False)
+                main_device(argv, device=rank)
