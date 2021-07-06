@@ -1,17 +1,24 @@
+import os
+import sys
+from pathlib import Path
+
 import numpy as np
 import torch
 from mpi4py import MPI
 
-from ...main import parse_arguments, main
+# ENV
+main_path = Path(__file__).parent.resolve().expanduser().parent.parent
+sys.path.insert(1, str(main_path))
+from main import parse_arguments, main
 
 
-def main_device(argv, device=0, info_only=False):
-    if device >= 0:
+def main_device(argv, device=0, info_only=False, cuda=True):
+    if cuda:
         torch.cuda.set_device(device)
-    args = parse_arguments(argv)
+    args = parse_arguments(argv.split(' '))
     if info_only:
-        name = torch.cuda.get_device_name(device)
-        print(f"DEVICE {device} <{name}>;  JOB {argv}")
+        name = torch.cuda.get_device_name(device) if cuda else 'cpu'
+        print(f"DEVICE {device} <{name}>: {argv}")
     else:
         main(args)
 
@@ -20,7 +27,7 @@ if __name__ == "__main__":
     # MPI
     comm = MPI.COMM_WORLD
     rank = comm.Get_rank()
-    assert comm.Get_size() == torch.cuda.device_count()
+    size = comm.Get_size()
 
     # read
     betas = np.loadtxt('grid_betas')
@@ -31,13 +38,16 @@ if __name__ == "__main__":
     argv_tmp = f'bvae_dsprites/z%d_b%s_s{seed} -s {seed} ' \
                f'--checkpoint-every 10000 -d dsprites -e 50 -b 256 --lr 0.0003 ' \
                f'-z %d -l betaH --betaH-B %s --is-metrics --no-test ' \
-               f'--no-progress-bar\n'
+               f'--no-progress-bar'
+
+    # change dir
+    os.chdir(main_path)
 
     # create bvae
     for ibeta, beta in enumerate(betas):
-        if ibeta % rank == 0:
+        if ibeta % size == rank:
             for nlat in nlats:
                 unnormalized_beta = beta * 64 * 64 / nlat
                 argv = argv_tmp % (
                     nlat, str(beta), nlat, str(unnormalized_beta))
-                main_device(argv, device=rank, info_only=True)
+                main_device(argv, device=-1, info_only=True, cuda=False)
