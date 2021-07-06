@@ -5,17 +5,19 @@ import torch
 import sys
 
 
-def axis_aligned_decay(sorted_mut_info, base=.9, num=10000):
-    # normalize based on max
-    sorted_mut_info /= sorted_mut_info[:, 0][:, None]
-    # weights
-    num = min(num, sorted_mut_info.shape[1])
-    weights = base ** torch.arange(0, num)
-    # sum with weights
-    aad_k = (sorted_mut_info[:, 0:num] * weights).sum(dim=1) / weights.sum()
+def axis_aligned_decay(sorted_mut_info):
+    lat_sizes = np.array([3, 6, 40, 32, 32])
+    H_v = torch.from_numpy(lat_sizes).float().log()
+
+    n = sorted_mut_info.shape[1]
+    KL_amp = np.log(n)
+    first = sorted_mut_info[:, 0] / sorted_mut_info[:, :n].sum(dim=1)
+    KL_first = - torch.log(first)
+    aad_k = 1 - KL_first / KL_amp
     aad_k[torch.isnan(aad_k)] = 0
-    aad = aad_k.mean()
-    return aad
+
+    aad_k *= sorted_mut_info[:, 0] / H_v
+    return aad_k.mean()
 
 
 if __name__ == '__main__':
@@ -33,7 +35,7 @@ if __name__ == '__main__':
     seed = 0
 
     # sizes
-    epochs = 50
+    epochs = 49  # one blows up at 50
     batchs_per_epoch = len(range(0, 737280, 256))
 
     # results
@@ -44,6 +46,7 @@ if __name__ == '__main__':
     REC = np.zeros((len(epses), len(nlats)))
     KL = np.zeros((len(epses), len(nlats)))
     LOSS = np.zeros((len(epses), len(nlats)))
+    LMBD = np.zeros((len(epses), len(nlats)))
     for ieps, eps in enumerate(epses):
         for inlat, nlat in enumerate(nlats):
             res_dir = main_path / (f'results/evae_dsprites_{cons}/'
@@ -51,7 +54,7 @@ if __name__ == '__main__':
             try:
                 # collect metrics
                 with open(res_dir / 'metrics.log', 'r') as handle:
-                    mdict = eval(handle.read())
+                    mdict = eval(handle.read().replace('NaN', '0.'))
                     LCM[ieps, inlat] = mdict['LCM']
                     MIG[ieps, inlat] = mdict['MIG']
                     AAM[ieps, inlat] = mdict['AAM']
@@ -69,9 +72,10 @@ if __name__ == '__main__':
                 epoch = epochs - 1
                 fname = res_dir / f'train_losses_epoch{epoch}.log'
                 data = np.loadtxt(fname, skiprows=1)
-                REC[ieps, inlat] = data[:, 0].mean()
-                KL[ieps, inlat] = data[:, 1].mean()
-                LOSS[ieps, inlat] = data[:, -1].mean()
+                REC[ieps, inlat] = data[:, 1].mean()
+                KL[ieps, inlat] = data[:, 2].mean()
+                LOSS[ieps, inlat] = data[:, -3].mean()
+                LMBD[ieps, inlat] = data[:, -2].mean()
                 print(f'DONE: {res_dir}')
             except IOError:
                 print(f'SKIP: {res_dir}')
@@ -84,3 +88,4 @@ if __name__ == '__main__':
     np.save(my_path / f'results_{cons}/metric_REC.npy', REC)
     np.save(my_path / f'results_{cons}/metric_KL.npy', KL)
     np.save(my_path / f'results_{cons}/metric_LOSS.npy', LOSS)
+    np.save(my_path / f'results_{cons}/metric_LMBD.npy', LMBD)

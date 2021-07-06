@@ -4,17 +4,19 @@ import numpy as np
 import torch
 
 
-def axis_aligned_decay(sorted_mut_info, base=.9, num=10000):
-    # normalize based on max
-    sorted_mut_info /= sorted_mut_info[:, 0][:, None]
-    # weights
-    num = min(num, sorted_mut_info.shape[1])
-    weights = base ** torch.arange(0, num)
-    # sum with weights
-    aad_k = (sorted_mut_info[:, 0:num] * weights).sum(dim=1) / weights.sum()
+def axis_aligned_decay(sorted_mut_info):
+    lat_sizes = np.array([3, 6, 40, 32, 32])
+    H_v = torch.from_numpy(lat_sizes).float().log()
+
+    n = sorted_mut_info.shape[1]
+    KL_amp = np.log(n)
+    first = sorted_mut_info[:, 0] / sorted_mut_info[:, :n].sum(dim=1)
+    KL_first = - torch.log(first)
+    aad_k = 1 - KL_first / KL_amp
     aad_k[torch.isnan(aad_k)] = 0
-    aad = aad_k.mean()
-    return aad
+
+    aad_k *= sorted_mut_info[:, 0] / H_v
+    return aad_k.mean()
 
 
 if __name__ == '__main__':
@@ -28,7 +30,7 @@ if __name__ == '__main__':
     seed = 0
 
     # sizes
-    epochs = 50
+    epochs = 49  # one blows up at 50
     batchs_per_epoch = len(range(0, 737280, 256))
 
     # results
