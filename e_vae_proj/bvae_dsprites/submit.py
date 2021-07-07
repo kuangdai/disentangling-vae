@@ -13,21 +13,16 @@ sys.path.insert(1, str(main_path))
 from main import parse_arguments, main
 
 
-def main_device(argv, device=0, cuda=True):
-    if cuda:
-        torch.cuda.set_device(device)
-    args = parse_arguments(argv.split(' '))
-    name = torch.cuda.get_device_name(device) if cuda else 'cpu'
-    print(f"DEVICE {device} <{name}>: {argv}")
-    main(args)
-
-
 if __name__ == "__main__":
     # MPI
     comm = MPI.COMM_WORLD
     rank = comm.Get_rank()
     size = comm.Get_size()
+
+    # GPU
     assert size == torch.cuda.device_count()
+    torch.cuda.set_device(rank)
+    torch.set_num_threads(1)
 
     # read
     betas = np.loadtxt(my_path / 'grid_betas')
@@ -44,6 +39,9 @@ if __name__ == "__main__":
     # change dir
     os.chdir(main_path)
 
+    # barrier
+    comm.Barrier()
+
     # create bvae
     for ibeta, beta in enumerate(betas):
         if ibeta % size == rank:
@@ -51,4 +49,6 @@ if __name__ == "__main__":
                 unnormalized_beta = beta * 64 * 64 / nlat
                 argv = argv_tmp % (
                     nlat, str(beta), nlat, str(unnormalized_beta))
-                main_device(argv, device=rank)
+                args = parse_arguments(argv.split(' '))
+                print(f"DEVICE {rank}: {argv}")
+                main(args)
