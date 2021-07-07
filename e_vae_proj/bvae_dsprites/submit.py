@@ -28,7 +28,7 @@ if __name__ == "__main__":
     betas = np.loadtxt(my_path / 'grid_betas')
     nlats = np.loadtxt(my_path / 'grid_nlats')
     seed = 0
-    epochs = 45
+    epochs = 50
 
     # argv template
     argv_tmp = f'bvae_dsprites/z%d_b%s_s{seed} -s {seed} ' \

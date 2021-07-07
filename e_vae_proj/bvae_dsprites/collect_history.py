@@ -13,7 +13,7 @@ if __name__ == '__main__':
     seed = 0
 
     # sizes
-    epochs = 45
+    epochs = 50
     batchs_per_epoch = len(range(0, 737280, 256))
 
     # results

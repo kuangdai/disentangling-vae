@@ -14,10 +14,6 @@ if __name__ == '__main__':
     nlats = np.loadtxt(my_path / 'grid_nlats')
     seed = 0
 
-    # sizes
-    epochs = 45
-    batchs_per_epoch = len(range(0, 737280, 256))
-
     # results
     LCM = np.zeros((len(betas), len(nlats)))
     MIG = np.zeros((len(betas), len(nlats)))
@@ -39,8 +35,8 @@ if __name__ == '__main__':
                 MID[ibeta, inlat] = mdict['MID']
 
             # collect last epoch
-            epoch = epochs - 1
-            fname = res_dir / f'train_losses_epoch{epoch}.log'
+            epochs = 50
+            fname = res_dir / f'train_losses_epoch{epochs - 1}.log'
             data = np.loadtxt(fname, skiprows=1)
             REC[ibeta, inlat] = data[:, 0].mean()
             KL[ibeta, inlat] = data[:, 1].mean()
