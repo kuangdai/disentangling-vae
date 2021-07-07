@@ -1,0 +1,16 @@
+sbatch /Users/kuangdai/stfc/fundamental/disentangling-vae/e_vae_proj/evae_dsprites/jobs_rec/eps1.job
+sbatch /Users/kuangdai/stfc/fundamental/disentangling-vae/e_vae_proj/evae_dsprites/jobs_rec/eps3.job
+sbatch /Users/kuangdai/stfc/fundamental/disentangling-vae/e_vae_proj/evae_dsprites/jobs_rec/eps5.job
+sbatch /Users/kuangdai/stfc/fundamental/disentangling-vae/e_vae_proj/evae_dsprites/jobs_rec/eps7.job
+sbatch /Users/kuangdai/stfc/fundamental/disentangling-vae/e_vae_proj/evae_dsprites/jobs_rec/eps9.job
+sbatch /Users/kuangdai/stfc/fundamental/disentangling-vae/e_vae_proj/evae_dsprites/jobs_rec/eps11.job
+sbatch /Users/kuangdai/stfc/fundamental/disentangling-vae/e_vae_proj/evae_dsprites/jobs_rec/eps13.job
+sbatch /Users/kuangdai/stfc/fundamental/disentangling-vae/e_vae_proj/evae_dsprites/jobs_rec/eps15.job
+sbatch /Users/kuangdai/stfc/fundamental/disentangling-vae/e_vae_proj/evae_dsprites/jobs_rec/eps17.job
+sbatch /Users/kuangdai/stfc/fundamental/disentangling-vae/e_vae_proj/evae_dsprites/jobs_rec/eps19.job
+sbatch /Users/kuangdai/stfc/fundamental/disentangling-vae/e_vae_proj/evae_dsprites/jobs_rec/eps21.job
+sbatch /Users/kuangdai/stfc/fundamental/disentangling-vae/e_vae_proj/evae_dsprites/jobs_rec/eps23.job
+sbatch /Users/kuangdai/stfc/fundamental/disentangling-vae/e_vae_proj/evae_dsprites/jobs_rec/eps25.job
+sbatch /Users/kuangdai/stfc/fundamental/disentangling-vae/e_vae_proj/evae_dsprites/jobs_rec/eps27.job
+sbatch /Users/kuangdai/stfc/fundamental/disentangling-vae/e_vae_proj/evae_dsprites/jobs_rec/eps29.job
+sbatch /Users/kuangdai/stfc/fundamental/disentangling-vae/e_vae_proj/evae_dsprites/jobs_rec/eps31.job

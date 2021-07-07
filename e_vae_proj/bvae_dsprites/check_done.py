@@ -16,7 +16,7 @@ if __name__ == '__main__':
     for ibeta, beta in enumerate(betas):
         print(f'beta-{ibeta:02d}    ', end='')
         for inlat, nlat in enumerate(nlats):
-            log50 = main_path / (f'results/bvae_dsprites/z%d_b%s_s{seed}/' \
-                                 f'train_losses_epoch49.log' % (nlat, str(beta)))
-            print(int(log50.exists()), end='')
+            metrics_log = main_path / (f'results/bvae_dsprites/z%d_b%s_s{seed}/' \
+                                       f'metrics.log' % (nlat, str(beta)))
+            print(int(metrics_log.exists()), end='')
         print('')

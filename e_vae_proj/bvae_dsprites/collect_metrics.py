@@ -4,21 +4,6 @@ import numpy as np
 import torch
 
 
-def axis_aligned_decay(sorted_mut_info):
-    lat_sizes = np.array([3, 6, 40, 32, 32])
-    H_v = torch.from_numpy(lat_sizes).float().log()
-
-    n = sorted_mut_info.shape[1]
-    KL_amp = np.log(n)
-    first = sorted_mut_info[:, 0] / sorted_mut_info[:, :n].sum(dim=1)
-    KL_first = - torch.log(first)
-    aad_k = 1 - KL_first / KL_amp
-    aad_k[torch.isnan(aad_k)] = 0
-
-    aad_k *= sorted_mut_info[:, 0] / H_v
-    return aad_k.mean()
-
-
 if __name__ == '__main__':
     # absolute path
     my_path = Path(__file__).parent.resolve().expanduser()
@@ -30,14 +15,14 @@ if __name__ == '__main__':
     seed = 0
 
     # sizes
-    epochs = 49  # one blows up at 50
+    epochs = 45
     batchs_per_epoch = len(range(0, 737280, 256))
 
     # results
     LCM = np.zeros((len(betas), len(nlats)))
     MIG = np.zeros((len(betas), len(nlats)))
     AAM = np.zeros((len(betas), len(nlats)))
-    AAD = np.zeros((len(betas), len(nlats)))
+    MID = np.zeros((len(betas), len(nlats)))
     REC = np.zeros((len(betas), len(nlats)))
     KL = np.zeros((len(betas), len(nlats)))
     LOSS = np.zeros((len(betas), len(nlats)))
@@ -51,15 +36,7 @@ if __name__ == '__main__':
                 LCM[ibeta, inlat] = mdict['LCM']
                 MIG[ibeta, inlat] = mdict['MIG']
                 AAM[ibeta, inlat] = mdict['AAM']
-
-            # compute modified AAD
-            metric_helpers = torch.load(res_dir / 'metric_helpers.pth')
-            H_z = metric_helpers['marginal_entropies']
-            H_zCv = metric_helpers['cond_entropies']
-            mut_info = - H_zCv + H_z
-            sorted_mut_info = torch.sort(mut_info, dim=1, descending=True)[
-                0].clamp(min=0)
-            AAD[ibeta, inlat] = axis_aligned_decay(sorted_mut_info)
+                MID[ibeta, inlat] = mdict['MID']
 
             # collect last epoch
             epoch = epochs - 1
@@ -74,7 +51,7 @@ if __name__ == '__main__':
     np.save(my_path / f'results/metric_LCM.npy', LCM)
     np.save(my_path / f'results/metric_MIG.npy', MIG)
     np.save(my_path / f'results/metric_AAM.npy', AAM)
-    np.save(my_path / f'results/metric_AAD.npy', AAD)
+    np.save(my_path / f'results/metric_MID.npy', MID)
     np.save(my_path / f'results/metric_REC.npy', REC)
     np.save(my_path / f'results/metric_KL.npy', KL)
     np.save(my_path / f'results/metric_LOSS.npy', LOSS)

@@ -7,7 +7,8 @@ import torch
 from mpi4py import MPI
 
 # ENV
-main_path = Path(__file__).parent.resolve().expanduser().parent.parent
+my_path = Path(__file__).parent.resolve().expanduser()
+main_path = my_path.parent.parent
 sys.path.insert(1, str(main_path))
 from main import parse_arguments, main
 
@@ -29,13 +30,14 @@ if __name__ == "__main__":
     assert size == torch.cuda.device_count()
 
     # read
-    betas = np.loadtxt('grid_betas')
-    nlats = np.loadtxt('grid_nlats')
+    betas = np.loadtxt(my_path / 'grid_betas')
+    nlats = np.loadtxt(my_path / 'grid_nlats')
     seed = 0
+    epochs = 45
 
     # argv template
     argv_tmp = f'bvae_dsprites/z%d_b%s_s{seed} -s {seed} ' \
-               f'--checkpoint-every 10000 -d dsprites -e 50 -b 256 --lr 0.0003 ' \
+               f'--checkpoint-every 10000 -d dsprites -e {epochs} -b 256 --lr 0.0003 ' \
                f'-z %d -l betaH --betaH-B %s --is-metrics --no-test ' \
                f'--no-progress-bar'
 
