@@ -19,7 +19,7 @@ if __name__ == '__main__':
     cmd = f'python main.py btcvae_mnist_{epochs}ep/z{nlat}_a{alpha}_b{beta}_g{gamma}_s{seed} -s {seed} ' \
               f'--checkpoint-every 25 -d mnist -e {epochs} -b 64 --lr 0.0005 ' \
               f'-z {nlat} -l btcvae --btcvae_A {alpha} --btcvae_B {beta} --btcvae_G {gamma} ' \
-              f'--is-metrics --no-test\n'
+              f'--no-test\n'
 
     with open(my_path / f'train_beta{beta}.sh', 'w') as f:
         unnormalized_beta = beta * nlat
