@@ -3,10 +3,21 @@ import sys
 from pathlib import Path
 
 import numpy as np
-import torch
 from mpi4py import MPI
 
-# ENV
+# MPI
+comm = MPI.COMM_WORLD
+rank = comm.Get_rank()
+size = comm.Get_size()
+
+# GPU
+os.environ['CUDA_VISIBLE_DEVICES'] = ','.join(str(i) for i in range(size))
+import torch
+assert size == torch.cuda.device_count()
+torch.cuda.set_device(rank)
+torch.set_num_threads(1)
+
+# path and main
 my_path = Path(__file__).parent.resolve().expanduser()
 main_path = my_path.parent.parent
 sys.path.insert(1, str(main_path))
@@ -14,16 +25,6 @@ from main import parse_arguments, main
 
 
 if __name__ == "__main__":
-    # MPI
-    comm = MPI.COMM_WORLD
-    rank = comm.Get_rank()
-    size = comm.Get_size()
-
-    # GPU
-    assert size == torch.cuda.device_count()
-    torch.cuda.set_device(rank)
-    torch.set_num_threads(1)
-
     # read
     betas = np.loadtxt(my_path / 'grid_betas')
     nlats = np.loadtxt(my_path / 'grid_nlats')
@@ -50,5 +51,4 @@ if __name__ == "__main__":
                 argv = argv_tmp % (
                     nlat, str(beta), nlat, str(unnormalized_beta))
                 args = parse_arguments(argv.split(' '))
-                print(f"DEVICE {rank}: {argv}")
                 main(args)
