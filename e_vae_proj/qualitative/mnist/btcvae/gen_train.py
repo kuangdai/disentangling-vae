@@ -13,10 +13,11 @@ if __name__ == '__main__':
     alpha = 1.0
     beta = 6.0
     gamma = 1.0
+    epochs = 100
 
     # cmd template
-    cmd = f'python main.py btcvae_mnist_100ep/z{nlat}_a{alpha}_b{beta}_g{gamma}_s{seed} -s {seed} ' \
-              f'--checkpoint-every 25 -d mnist -e 100 -b 64 --lr 0.0005 ' \
+    cmd = f'python main.py btcvae_mnist_{epochs}ep/z{nlat}_a{alpha}_b{beta}_g{gamma}_s{seed} -s {seed} ' \
+              f'--checkpoint-every 25 -d mnist -e {epochs} -b 64 --lr 0.0005 ' \
               f'-z {nlat} -l btcvae --btcvae_A {alpha} --btcvae_B {beta} --btcvae_G {gamma} ' \
               f'--is-metrics --no-test\n'
 
