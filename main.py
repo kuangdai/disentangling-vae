@@ -216,7 +216,7 @@ def main(args):
     stream.setFormatter(formatter)
     logger.addHandler(stream)
     if args.log_file != '':
-        file_handler = logging.FileHandler(args.log_file)
+        file_handler = logging.FileHandler(args.log_file, mode='a')
         file_handler.setLevel(args.log_level.upper())
         file_handler.setFormatter(formatter)
         logger.addHandler(file_handler)
