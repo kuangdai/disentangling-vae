@@ -86,9 +86,22 @@ class Trainer():
         """
         start = default_timer()
         self.model.train()
+
+        N = len(data_loader.dataset)
+        if pin_dataset_gpu:
+            new_loader = DataLoader(data_loader.dataset,
+                                    batch_size=N, shuffle=False)
+            pinned_data, _ = next(iter(new_loader))
+            # send all to GPU
+            pinned_data = pinned_data.to(self.device)
+        else:
+            pinned_data = None
+
         for epoch in range(epochs):
             storer = defaultdict(list)
-            mean_epoch_loss = self._train_epoch(data_loader, storer, epoch, pin_dataset_gpu)
+            if pinned_data is not None:
+                pinned_data = pinned_data[torch.randperm(N)]  # shuffle
+            mean_epoch_loss = self._train_epoch(data_loader, storer, epoch, pinned_data)
             self.logger.info('Epoch: {} Average loss per image: {:.2f}'.format(epoch + 1,
                                                                                mean_epoch_loss))
             self.losses_logger.log(epoch, storer)
@@ -100,6 +113,10 @@ class Trainer():
                 save_model(self.model, self.save_dir,
                            filename="model-{}.pt".format(epoch))
 
+        if pinned_data is not None:
+            del pinned_data
+            torch.cuda.empty_cache()
+
         if self.gif_visualizer is not None:
             self.gif_visualizer.save_reset()
 
@@ -108,7 +125,7 @@ class Trainer():
         delta_time = (default_timer() - start) / 60
         self.logger.info('Finished training after {:.1f} min.'.format(delta_time))
 
-    def _train_epoch(self, data_loader, storer, epoch, pin_dataset_gpu):
+    def _train_epoch(self, data_loader, storer, epoch, pinned_data=None):
         """
         Trains the model for one epoch.
 
@@ -130,17 +147,12 @@ class Trainer():
         epoch_loss = 0.
         kwargs = dict(desc="Epoch {}".format(epoch + 1), leave=False,
                       disable=not self.is_progress_bar)
-        if pin_dataset_gpu:
-            N = len(data_loader)
-            new_loader = DataLoader(data_loader.dataset,
-                                    batch_size=N, shuffle=True)
-            all_data, _ = next(iter(new_loader))
-            # send all to GPU
-            all_data = all_data.to(self.device)
-            with trange(N, **kwargs) as t:
+        if pinned_data is not None:
+            N = len(data_loader.dataset)
+            with trange(len(data_loader), **kwargs) as t:
                 for start in range(0, N, data_loader.batch_size):
                     end = min(N, start + data_loader.batch_size)
-                    iter_loss = self._train_iteration(all_data[start:end], storer)
+                    iter_loss = self._train_iteration(pinned_data[start:end], storer)
                     epoch_loss += iter_loss
 
                     t.set_postfix(loss=iter_loss)
