@@ -5,6 +5,7 @@ from pathlib import Path
 import numpy as np
 import torch
 import torch.distributed as dist
+from mpi4py import MPI
 
 
 def run(rank, size):
@@ -51,7 +52,8 @@ def init_processes(rank, size, gpu, fn, backend='mpi'):
 
 
 if __name__ == "__main__":
-    world_size = int(os.environ['OMPI_COMM_WORLD_SIZE'])
-    world_rank = int(os.environ['OMPI_COMM_WORLD_RANK'])
-    gpu = int(os.environ['OMPI_COMM_WORLD_LOCAL_RANK'])
+    comm = MPI.COMM_WORLD
+    world_rank = comm.Get_rank()
+    world_size = comm.Get_size()
+    gpu = int(world_rank)
     init_processes(world_rank, world_size, gpu, run, backend='mpi')

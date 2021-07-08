@@ -1,6 +1,5 @@
 #!/bin/bash
 #SBATCH -p pearl
-#SBATCH -N 1
 #SBATCH -n 4
 #SBATCH --gres=gpu:4
 #SBATCH --mem-per-cpu=20G
