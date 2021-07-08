@@ -212,7 +212,7 @@ def main(args):
     """
     formatter = logging.Formatter('%(asctime)s %(levelname)s - %(funcName)s: %(message)s',
                                   "%H:%M:%S")
-    logger = logging.getLogger(__name__)
+    logger = logging.getLogger(args.name)
     logger.setLevel(args.log_level.upper())
     stream = logging.StreamHandler()
     stream.setLevel(args.log_level.upper())
