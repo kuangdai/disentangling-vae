@@ -72,6 +72,10 @@ def parse_arguments(args_to_parse):
                           help='Batch size for training.')
     training.add_argument('--lr', type=float, default=default_config['lr'],
                           help='Learning rate.')
+    training.add_argument('--record-loss-every', type=int,
+                          default=1, help='Interval to record losses.')
+    training.add_argument('--pin-dataset-gpu', action='store_true',
+                          help='Pin entire dataset on gpu.')
 
     # Model Options
     model = parser.add_argument_group('Model specfic options')
@@ -262,7 +266,8 @@ def main(args):
                           gif_visualizer=gif_visualizer)
         trainer(train_loader,
                 epochs=args.epochs,
-                checkpoint_every=args.checkpoint_every,)
+                checkpoint_every=args.checkpoint_every,
+                pin_dataset_gpu=args.pin_dataset_gpu)
 
         # SAVE MODEL AND EXPERIMENT INFORMATION
         save_model(trainer.model, exp_dir, metadata=vars(args))

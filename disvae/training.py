@@ -11,6 +11,7 @@ import torch
 from torch.nn import functional as F
 
 from disvae.utils.modelIO import save_model
+from torch.utils.data import DataLoader
 
 
 TRAIN_LOSSES_LOGFILE = "train_losses.log"
@@ -65,7 +66,8 @@ class Trainer():
 
     def __call__(self, data_loader,
                  epochs=10,
-                 checkpoint_every=10):
+                 checkpoint_every=10,
+                 pin_dataset_gpu=False):
         """
         Trains the model.
 
@@ -78,12 +80,15 @@ class Trainer():
 
         checkpoint_every: int, optional
             Save a checkpoint of the trained model every n epoch.
+
+        pin_dataset_gpu: bool, optional
+            Pin entire dataset on GPU.
         """
         start = default_timer()
         self.model.train()
         for epoch in range(epochs):
             storer = defaultdict(list)
-            mean_epoch_loss = self._train_epoch(data_loader, storer, epoch)
+            mean_epoch_loss = self._train_epoch(data_loader, storer, epoch, pin_dataset_gpu)
             self.logger.info('Epoch: {} Average loss per image: {:.2f}'.format(epoch + 1,
                                                                                mean_epoch_loss))
             self.losses_logger.log(epoch, storer)
@@ -103,7 +108,7 @@ class Trainer():
         delta_time = (default_timer() - start) / 60
         self.logger.info('Finished training after {:.1f} min.'.format(delta_time))
 
-    def _train_epoch(self, data_loader, storer, epoch):
+    def _train_epoch(self, data_loader, storer, epoch, pin_dataset_gpu):
         """
         Trains the model for one epoch.
 
@@ -125,13 +130,29 @@ class Trainer():
         epoch_loss = 0.
         kwargs = dict(desc="Epoch {}".format(epoch + 1), leave=False,
                       disable=not self.is_progress_bar)
-        with trange(len(data_loader), **kwargs) as t:
-            for _, (data, _) in enumerate(data_loader):
-                iter_loss = self._train_iteration(data, storer)
-                epoch_loss += iter_loss
+        if pin_dataset_gpu:
+            N = len(data_loader)
+            new_loader = DataLoader(data_loader.dataset,
+                                    batch_size=N, shuffle=True)
+            all_data, _ = next(iter(new_loader))
+            # send all to GPU
+            all_data = all_data.to(self.device)
+            with trange(N, **kwargs) as t:
+                for start in range(0, N, data_loader.batch_size):
+                    end = min(N, start + data_loader.batch_size)
+                    iter_loss = self._train_iteration(all_data[start:end], storer)
+                    epoch_loss += iter_loss
 
-                t.set_postfix(loss=iter_loss)
-                t.update()
+                    t.set_postfix(loss=iter_loss)
+                    t.update()
+        else:
+            with trange(len(data_loader), **kwargs) as t:
+                for _, (data, _) in enumerate(data_loader):
+                    iter_loss = self._train_iteration(data, storer)
+                    epoch_loss += iter_loss
+
+                    t.set_postfix(loss=iter_loss)
+                    t.update()
 
         mean_epoch_loss = epoch_loss / len(data_loader)
         return mean_epoch_loss
@@ -149,7 +170,8 @@ class Trainer():
             Dictionary in which to store important variables for vizualisation.
         """
         batch_size, channel, height, width = data.size()
-        data = data.to(self.device)
+        if not data.is_cuda:
+            data = data.to(self.device)
 
         try:
             recon_batch, latent_dist, latent_sample = self.model(data)
