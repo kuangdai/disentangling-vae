@@ -6,6 +6,7 @@ import numpy as np
 import torch
 
 from disvae import init_specific_model
+from utils.helpers import get_device
 
 MODEL_FILENAME = "model.pt"
 META_FILENAME = "specs.json"
@@ -78,7 +79,7 @@ def save_metadata(metadata, directory, filename=META_FILENAME, **kwargs):
         json.dump(metadata, f, indent=4, sort_keys=True, **kwargs)
 
 
-def load_model(directory, is_gpu=True, filename=MODEL_FILENAME):
+def load_model(directory, gpu_id=0, filename=MODEL_FILENAME):
     """Load a trained model.
 
     Parameters
@@ -86,11 +87,10 @@ def load_model(directory, is_gpu=True, filename=MODEL_FILENAME):
     directory : string
         Path to folder where model is saved. For example './experiments/mnist'.
 
-    is_gpu : bool
-        Whether to load on GPU is available.
+    gpu_id : int
+        gpu index.
     """
-    device = torch.device("cuda" if torch.cuda.is_available() and is_gpu
-                          else "cpu")
+    device = get_device(gpu_id=gpu_id)
 
     path_to_model = os.path.join(directory, MODEL_FILENAME)
 
@@ -104,7 +104,7 @@ def load_model(directory, is_gpu=True, filename=MODEL_FILENAME):
     return model
 
 
-def load_checkpoints(directory, is_gpu=True):
+def load_checkpoints(directory, gpu_id=0):
     """Load all chechpointed models.
 
     Parameters
@@ -112,8 +112,8 @@ def load_checkpoints(directory, is_gpu=True):
     directory : string
         Path to folder where model is saved. For example './experiments/mnist'.
 
-    is_gpu : bool
-        Whether to load on GPU .
+    gpu_id : int
+        gpu index.
     """
     checkpoints = []
     for root, _, filenames in os.walk(directory):
@@ -121,7 +121,7 @@ def load_checkpoints(directory, is_gpu=True):
             results = re.search(r'.*?-([0-9].*?).pt', filename)
             if results is not None:
                 epoch_idx = int(results.group(1))
-                model = load_model(root, is_gpu=is_gpu, filename=filename)
+                model = load_model(root, gpu_id=gpu_id, filename=filename)
                 checkpoints.append((epoch_idx, model))
 
     return checkpoints

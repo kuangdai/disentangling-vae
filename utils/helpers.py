@@ -30,10 +30,9 @@ def set_seed(seed):
         # torch.backends.cudnn.deterministic = True
 
 
-def get_device(is_gpu=True):
+def get_device(gpu_id=0):
     """Return the correct device"""
-    return torch.device("cuda" if torch.cuda.is_available() and is_gpu
-                        else "cpu")
+    return torch.device(f"cuda:{gpu_id}" if gpu_id >= 0 else "cpu")
 
 
 def get_model_device(model):

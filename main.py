@@ -49,9 +49,8 @@ def parse_arguments(args_to_parse):
     general.add_argument('--no-progress-bar', action='store_true',
                          default=default_config['no_progress_bar'],
                          help='Disables progress bar.')
-    general.add_argument('--no-cuda', action='store_true',
-                         default=default_config['no_cuda'],
-                         help='Disables CUDA training, even when have one.')
+    general.add_argument('--gpu-id', type=int, default=0,
+                         help='GPU index. Use -1 to disable GPU.')
     general.add_argument('-s', '--seed', type=int, default=default_config['seed'],
                          help='Random seed. Can be `None` for stochastic behavior.')
 
@@ -222,7 +221,7 @@ def main(args):
         logger.addHandler(file_handler)
 
     set_seed(args.seed)
-    device = get_device(is_gpu=not args.no_cuda)
+    device = get_device(gpu_id=args.gpu_id)
     exp_dir = os.path.join(RES_DIR, args.name)
     logger.info("Root directory for saving and loading experiments: {}".format(exp_dir))
 
@@ -269,7 +268,7 @@ def main(args):
         save_model(trainer.model, exp_dir, metadata=vars(args))
 
     if args.is_metrics or not args.no_test:
-        model = load_model(exp_dir, is_gpu=not args.no_cuda)
+        model = load_model(exp_dir, gpu_id=args.gpu_id)
         metadata = load_metadata(exp_dir)
         # TO-DO: currently uses train datatset
         test_loader = get_dataloaders(metadata["dataset"],
