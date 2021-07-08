@@ -19,7 +19,7 @@ if __name__ == '__main__':
     # cmd template
     cmd = f'python main_viz.py evae_mnist/{cons}_{epochs}ep_z{nlat}_e{epsilon}_s{seed} ' \
               f'all ' \
-              f'--is-show-loss --is-posterior ' \
+              f'--is-show-loss --is-posterior -s {seed} ' \
               f'\n'
 
     with open(my_path / f'viz_{cons}_eps{epsilon}.sh', 'w') as f:
