@@ -45,6 +45,7 @@ def parse_arguments(args_to_parse):
                          help="Name of the model for storing and loading purposes.")
     general.add_argument('-L', '--log-level', help="Logging levels.",
                          default=default_config['log_level'], choices=LOG_LEVELS)
+    general.add_argument('-F', '--log-file', help="Logging file.", default='')
     general.add_argument('--no-progress-bar', action='store_true',
                          default=default_config['no_progress_bar'],
                          help='Disables progress bar.')
@@ -214,6 +215,11 @@ def main(args):
     stream.setLevel(args.log_level.upper())
     stream.setFormatter(formatter)
     logger.addHandler(stream)
+    if args.log_file != '':
+        file_handler = logging.FileHandler(args.log_file)
+        file_handler.setLevel(args.log_level.upper())
+        file_handler.setFormatter(formatter)
+        logger.addHandler(file_handler)
 
     set_seed(args.seed)
     device = get_device(is_gpu=not args.no_cuda)
