@@ -24,7 +24,7 @@ def run(rank, size, comm):
                f'--checkpoint-every 10000 -d dsprites -e {epochs} -b 256 --lr 0.0003 ' \
                f'-z %d -l betaH --betaH-B %s --is-metrics --no-test ' \
                f'--no-progress-bar -F {str(my_path / f"results/z%d_b%s_s{seed}.out")} ' \
-               f'--gpu-id={rank}'
+               f'--gpu-id={rank} --record-loss-every=50 --pin-dataset-gpu'
 
     # change dir
     os.chdir(main_path)

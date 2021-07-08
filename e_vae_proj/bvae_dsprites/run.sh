@@ -1,8 +1,8 @@
 #!/bin/bash
 #SBATCH -p pearl
 #SBATCH --job-name=bvae
-#SBATCH --mem-per-cpu=20G
-#SBATCH --mem-per-gpu=20G
+#SBATCH --mem-per-cpu=32G
+#SBATCH --mem-per-gpu=32G
 #SBATCH --threads-per-core=1
 #SBATCH -n 4
 #SBATCH --gres=gpu:4
