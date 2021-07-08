@@ -17,15 +17,10 @@ if __name__ == '__main__':
     epochs = 100
 
     # cmd template
-    cmd_tmp = f'python main_viz.py evae_mnist_{cons}_{epochs}ep/z%d_e%s_s{seed} ' \
-              f'--is-show-loss --is-posterior' \
-              f'--plots all ' \
+    cmd = f'python main_viz.py evae_mnist/{cons}_{epochs}ep_z{nlat}_e{epsilon}_s{seed} ' \
+              f'all ' \
+              f'--is-show-loss --is-posterior ' \
               f'\n'
 
     with open(my_path / f'viz_{cons}_eps{epsilon}.sh', 'w') as f:
-        if cons == 'rec':
-            unnormalized_eps = epsilon * 64 * 64
-        else:
-            unnormalized_eps = epsilon * nlat
-        cmd = cmd_tmp % (nlat, str(epsilon), nlat, str(unnormalized_eps))
         f.write(cmd)

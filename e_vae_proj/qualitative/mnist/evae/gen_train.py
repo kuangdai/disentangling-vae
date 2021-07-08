@@ -17,9 +17,9 @@ if __name__ == '__main__':
     epochs = 100
 
     # cmd template
-    cmd_tmp = f'python main.py evae_mnist_{cons}_{epochs}ep/z%d_e%s_s{seed} -s {seed} ' \
+    cmd_tmp = f'python main.py evae_mnist/{cons}_{epochs}ep_z{nlat}_e{epsilon}_s{seed} -s {seed} ' \
               f'--checkpoint-every 25 -d mnist -e {epochs} -b 64 --lr 0.0005 ' \
-              f'-z %d -l epsvae --epsvae-constrain-reconstruction {cons == "rec"} ' \
+              f'-z {nlat} -l epsvae --epsvae-constrain-reconstruction {cons == "rec"} ' \
               f'--epsvae-epsilon %s --no-test\n'
 
     with open(my_path / f'train_{cons}_eps{epsilon}.sh', 'w') as f:
@@ -27,5 +27,5 @@ if __name__ == '__main__':
             unnormalized_eps = epsilon * 64 * 64
         else:
             unnormalized_eps = epsilon * nlat
-        cmd = cmd_tmp % (nlat, str(epsilon), nlat, str(unnormalized_eps))
+        cmd = cmd_tmp % (str(unnormalized_eps))
         f.write(cmd)

@@ -17,8 +17,8 @@ if __name__ == '__main__':
 
     # cmd template
     cmd = f'python main_viz.py btcvae_mnist_{epochs}ep/z{nlat}_a{alpha}_b{beta}_g{gamma}_s{seed} ' \
-              f'--is-show-loss --is-posterior' \
-              f'--plots all ' \
+              f'all ' \
+              f'--is-show-loss --is-posterior ' \
               f'\n'
 
     with open(my_path / f'viz_beta{beta}_ep{epochs}.sh', 'w') as f:
