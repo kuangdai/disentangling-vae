@@ -41,7 +41,10 @@ def run(rank, size, comm):
                     nlat, str(beta))
                 args = parse_arguments(argv.split(' '))
                 print(f'RANK {rank}, SIZE {size}, JOB {argv.split(" ")[0]}')
-                main(args)
+                try:
+                    main(args)
+                except:
+                    print(f'ERROR: RANK {rank}, SIZE {size}, JOB {argv.split(" ")[0]}')
 
 
 if __name__ == "__main__":
