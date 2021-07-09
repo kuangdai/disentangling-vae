@@ -132,10 +132,11 @@ def parse_arguments(args_to_parse):
                         help="Weight of the TC term (beta in the paper).")
 
     epsvae = parser.add_argument_group('epsvae specific parameters')
-    epsvae.add_argument('--epsvae-constrain-reconstruction', type=bool,
-                        default=False,
-                        help="Constrain reconstruction loss "
-                             "(otherwise constrain KL loss).")
+    epsvae.add_argument('--epsvae-constrain-reconstruction', dest='epsvae_constrain_reconstruction',
+                        action='store_true')
+    epsvae.add_argument('--epsvae-constrain-kl-divergence', dest='epsvae_constrain_reconstruction',
+                        action='store_false')
+    epsvae.set_defaults(epsvae_constrain_reconstruction=False)
     epsvae.add_argument('--epsvae-epsilon', type=float,
                         default=1., help="Epsilon.")
     epsvae.add_argument('--epsvae-warmup', type=int,
