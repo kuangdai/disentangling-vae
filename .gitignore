@@ -41,5 +41,5 @@ __pycache__/
 # placeholders to keep directories
 !.keep
 
-# all results ignored
-**/results/*
+# results
+e_vae_proj/*/results/*
