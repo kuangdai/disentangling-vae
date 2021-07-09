@@ -41,6 +41,5 @@ __pycache__/
 # placeholders to keep directories
 !.keep
 
-# jobs
-*.job
-hist_*.npy
+# all results ignored
+**/results/*
