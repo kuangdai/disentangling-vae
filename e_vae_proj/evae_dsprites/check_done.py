@@ -21,7 +21,7 @@ if __name__ == '__main__':
     for ieps, eps in enumerate(epses):
         print(f'eps-{ieps:02d}    ', end='')
         for inlat, nlat in enumerate(nlats):
-            log50 = main_path / (f'results/evae_dsprites_{cons}/z%d_e%s_s{seed}/' \
-                                 f'train_losses_epoch49.log' % (nlat, str(eps)))
-            print(int(log50.exists()), end='')
+            metrics_log = main_path / (f'results/evae_dsprites/{cons}/z%d_e%s_s{seed}/' \
+                                       f'metrics.log' % (nlat, str(eps)))
+            print(int(metrics_log.exists()), end='')
         print('')
