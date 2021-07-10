@@ -24,14 +24,14 @@ if __name__ == '__main__':
     for ibeta, beta in enumerate(betas):
         print(f'beta-{ibeta:02d}    ', end='')
         for inlat, nlat in enumerate(nlats):
-            metrics_log = main_path / (f'results/bvae_dsprites/z%d_b%s_s{seed}/' \
+            metrics_log = main_path / (f'results/bvae_dsprites/z%d_b%s_s{seed}/'
                                        f'metrics.log' % (nlat, str(beta)))
             if not metrics_log.exists():
                 print('0', end='')
             else:
                 # check convergence
                 loss_log = main_path / (
-                        f'results/bvae_dsprites/z%d_b%s_s{seed}/' \
+                        f'results/bvae_dsprites/z%d_b%s_s{seed}/'
                         f'train_losses_epoch{epochs - 1}.log' %
                         (nlat, str(beta)))
                 loss = np.loadtxt(loss_log, skiprows=1)[:, -1]
