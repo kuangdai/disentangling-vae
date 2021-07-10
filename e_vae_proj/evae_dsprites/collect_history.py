@@ -28,7 +28,7 @@ if __name__ == '__main__':
     hist_lambda = np.zeros((len(epses), len(nlats), epochs, batchs_per_epoch))
     for ieps, eps in enumerate(epses):
         for inlat, nlat in enumerate(nlats):
-            res_dir = main_path / (f'results/evae_dsprites_{cons}/'
+            res_dir = main_path / (f'results/evae_dsprites/{cons}/'
                                    f'z%d_e%s_s{seed}/' % (nlat, str(eps)))
             # collect history
             for epoch in range(epochs):
@@ -42,7 +42,7 @@ if __name__ == '__main__':
             print(f'DONE: {res_dir}')
 
     # save
-    np.save(my_path / f'results_{cons}/hist_rec.npy', hist_rec)
-    np.save(my_path / f'results_{cons}/hist_KL.npy', hist_KL)
-    np.save(my_path / f'results_{cons}/hist_loss.npy', hist_loss)
-    np.save(my_path / f'results_{cons}/hist_lambda.npy', hist_lambda)
+    np.save(my_path / f'results/{cons}/hist_rec.npy', hist_rec)
+    np.save(my_path / f'results/{cons}/hist_KL.npy', hist_KL)
+    np.save(my_path / f'results/{cons}/hist_loss.npy', hist_loss)
+    np.save(my_path / f'results/{cons}/hist_lambda.npy', hist_lambda)
