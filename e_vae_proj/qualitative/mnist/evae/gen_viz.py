@@ -13,7 +13,10 @@ if __name__ == '__main__':
 
     seed = 0
     nlat = 10
-    epsilon = 1.0
+    if cons == "rec":
+        epsilon = 0.2
+    else:
+        epsilon = 0.1
     epochs = 100
 
     # cmd template

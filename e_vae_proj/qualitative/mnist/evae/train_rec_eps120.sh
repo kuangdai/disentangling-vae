@@ -1,0 +1,1 @@
+python main.py evae_mnist/rec_100ep_z10_e120_s0 -s 0 --checkpoint-every 25 -d mnist -e 100 -b 64 --lr 0.0005 -z 10 -l epsvae --epsvae-constrain-reconstruction True --epsvae-epsilon 491520 --no-test --record-loss-every=50 --pin-dataset-gpu 
