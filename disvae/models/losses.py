@@ -483,9 +483,9 @@ class EpsilonLoss(BaseLoss):
         if training_lbd:
             # update lda
             if self.eps_recon:
-                self.lbd += (F.relu(rec_loss - self.eps) * lbd_lr).item()
+                self.lbd += F.relu(rec_loss - self.eps).item() * lbd_lr
             else:
-                self.lbd += (F.relu(kl_loss - self.eps) * lbd_lr).item()
+                self.lbd += F.relu(kl_loss - self.eps).item() * lbd_lr
 
             # update lbd steps
             self.n_lbd_updates += 1
@@ -605,9 +605,9 @@ class MultiEpsilonLoss(BaseLoss):
                                  self.n_lbd_updates / self.lbd_lr_decay_step)
         if training_lbd:
             # update lda
-            self.lbd_alpha += (F.relu(mi_loss - self.eps_alpha) * lbd_lr).item()
-            self.lbd_beta += (F.relu(tc_loss - self.eps_beta) * lbd_lr).item()
-            self.lbd_gamma += (F.relu(dw_kl_loss - self.eps_gamma) * lbd_lr).item()
+            self.lbd_alpha += F.relu(mi_loss - self.eps_alpha).item() * lbd_lr
+            self.lbd_beta += F.relu(tc_loss - self.eps_beta).item() * lbd_lr
+            self.lbd_gamma += F.relu(dw_kl_loss - self.eps_gamma).item() * lbd_lr
 
             # update lbd steps
             self.n_lbd_updates += 1

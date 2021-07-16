@@ -6,7 +6,7 @@ import numpy as np
 from mpi4py import MPI
 
 
-def run(rank, size, comm):
+def run(rank, size, comm, cons):
     # path and main
     my_path = Path(__file__).parent.resolve().expanduser()
     main_path = my_path.parent.parent
@@ -14,31 +14,37 @@ def run(rank, size, comm):
     from main import parse_arguments, main
 
     # read
-    betas = np.loadtxt(my_path / 'grid_betas')
+    epses = np.loadtxt(my_path / f'grid_eps_{cons}')
     nlats = np.loadtxt(my_path / 'grid_nlats')
     seed = 0
     epochs = 50
 
     # argv template
-    argv_tmp = f'bvae_dsprites/z%d_b%s_s{seed} -s {seed} ' \
+    argv_tmp = f'evae_dsprites/{cons}/z%d_e%s_s{seed} -s {seed} ' \
                f'--checkpoint-every 10000 -d dsprites -e {epochs} -b 256 --lr 0.0003 ' \
-               f'-z %d -l betaH --betaH-B %s --is-metrics --no-test ' \
-               f'--no-progress-bar -F {str(my_path / f"results/z%d_b%s_s{seed}.out")} ' \
+               f'-z %d -l epsvae --epsvae-constrain-%s --epsvae-epsilon %s --epsvae-lambda-lr 0.0003 ' \
+               f'--is-metrics --no-test ' \
+               f'--no-progress-bar -F {str(my_path / f"results/{cons}/z%d_e%s_s{seed}.out")} ' \
                f'--gpu-id={rank} --record-loss-every=50 --pin-dataset-gpu'
 
     # change dir
     os.chdir(main_path)
-    os.system('rm -rf results/bvae_dsprites/*')
+    os.system(f'rm -rf results/evae_dsprites/{cons}/*')
     comm.Barrier()
 
-    # create bvae
-    for ibeta, beta in enumerate(betas):
-        if ibeta % size == rank:
+    # create evae
+    for ieps, eps in enumerate(epses):
+        if ieps % size == rank:
             for nlat in nlats:
-                unnormalized_beta = beta * 64 * 64 / nlat
+                if cons == 'rec':
+                    unnormalized_eps = eps * 64 * 64
+                    cons_full = 'reconstruction'
+                else:
+                    unnormalized_eps = eps * nlat
+                    cons_full = 'kl-divergence'
                 argv = argv_tmp % (
-                    nlat, str(beta), nlat, str(unnormalized_beta),
-                    nlat, str(beta))
+                    nlat, str(eps), nlat, cons_full, str(unnormalized_eps),
+                    nlat, str(eps))
                 args = parse_arguments(argv.split(' '))
                 print(f'RANK {rank}, SIZE {size}, JOB {argv.split(" ")[0]}')
                 try:
@@ -48,7 +54,11 @@ def run(rank, size, comm):
 
 
 if __name__ == "__main__":
+    # constraint type
+    cons = sys.argv[1]
+    assert cons in ['kl', 'rec']
+
     comm = MPI.COMM_WORLD
     world_rank = comm.Get_rank()
     world_size = comm.Get_size()
-    run(world_rank, world_size, comm)
+    run(world_rank, world_size, comm, cons)
