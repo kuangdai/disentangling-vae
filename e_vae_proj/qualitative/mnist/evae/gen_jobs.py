@@ -16,16 +16,18 @@ if __name__ == '__main__':
 
     seed = 0
     nlat = 10
+    lr = 0.001
+    increment = 2
     if cons == "rec":
         epsilon = 0.2
     else:
         epsilon = 0.1
 
     # training cmd template
-    cmd_train_tmp = f'python main.py evae_mnist/{cons}_{epochs}ep_z{nlat}_e{epsilon}_s{seed} -s {seed} ' \
-              f'--checkpoint-every 25 -d mnist -e {epochs} -b 64 --lr 0.0005 ' \
+    cmd_train_tmp = f'python main.py evae_mnist/{cons}_{epochs}ep_z{nlat}_e{epsilon}_s{seed}_lr{lr}_incr{increment} -s {seed} ' \
+              f'--checkpoint-every 25 -d mnist -e {epochs} -b 64 --lr {lr} ' \
               f'-z {nlat} -l epsvae %s ' \
-              f'--epsvae-epsilon %s --no-test --record-loss-every=50 --pin-dataset-gpu \n'
+              f'--epsvae-epsilon %s --epsvae-interval-incr-L {increment} --no-test --record-loss-every=50 --pin-dataset-gpu \n'
 
     # eval cmd template
     cmd_eval = f'python main.py evae_mnist/{cons}_{epochs}ep_z{nlat}_e{epsilon}_s{seed} ' \
