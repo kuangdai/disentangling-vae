@@ -12,7 +12,7 @@ if __name__ == '__main__':
 
     # absolute path
     my_path = Path(__file__).parent.resolve().expanduser()
-    main_path = my_path.parent.parent
+    main_path = my_path.parent.parent.parent
 
     seed = 1234
     nlat = 10

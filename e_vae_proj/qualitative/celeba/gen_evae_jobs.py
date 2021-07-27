@@ -12,15 +12,15 @@ if __name__ == '__main__':
 
     # absolute path
     my_path = Path(__file__).parent.resolve().expanduser()
-    main_path = my_path.parent.parent
+    main_path = my_path.parent.parent.parent
 
     seed = 1234
     nlat = 10
     batchs = 64
-    lrs = [0.0005, 0.001]
-    increments = [4, 2]
+    lrs = [0.00005, 0.0001, 0.0003]
+    increments = [4]
     if cons == "rec":
-        epsilon = 30
+        epsilon = 35
     else:
         epsilon = 0.08
 
@@ -33,15 +33,15 @@ if __name__ == '__main__':
                     f'--epsvae-epsilon %s --epsvae-interval-incr-L {increment} --no-test --record-loss-every=50 --pin-dataset-gpu \n'
 
             # eval cmd template
-            cmd_eval = f'python main.py evae_celeba/{cons}_{epochs}ep_z{nlat}_e{epsilon}_s{seed} ' \
+            cmd_eval = f'python main.py evae_celeba/{cons}_{epochs}ep_z{nlat}_e{epsilon}_s{seed}_lr{lr}_incr{increment} ' \
                     f'--is-eval-only \n'
 
             # viz cmd template
-            cmd_viz = f'python main_viz.py evae_celeba/{cons}_{epochs}ep_z{nlat}_e{epsilon}_s{seed} ' \
+            cmd_viz = f'python main_viz.py evae_celeba/{cons}_{epochs}ep_z{nlat}_e{epsilon}_s{seed}_lr{lr}_incr{increment} ' \
                     f'all ' \
                     f'--is-show-loss --is-posterior -s {seed} ' \
                     f'\n' \
-                    f'python main_viz.py evae_celeba/{cons}_{epochs}ep_z{nlat}_e{epsilon}_s{seed} ' \
+                    f'python main_viz.py evae_celeba/{cons}_{epochs}ep_z{nlat}_e{epsilon}_s{seed}_lr{lr}_incr{increment} ' \
                     f'traversals ' \
                     f'--is-show-loss -s {seed} ' \
                     f'\n'
