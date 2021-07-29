@@ -76,6 +76,8 @@ def parse_arguments(args_to_parse):
                           default=1, help='Interval to record losses.')
     training.add_argument('--pin-dataset-gpu', action='store_true',
                           help='Pin entire dataset on gpu.')
+    training.add_argument('--continue-train-from', type=str, default='',
+                          help='Continue training from this model.')
 
     # Model Options
     model = parser.add_argument_group('Model specfic options')
@@ -247,7 +249,12 @@ def main(args):
 
         # PREPARES MODEL
         args.img_size = get_img_size(args.dataset)  # stores for metadata
-        model = init_specific_model(args.model_type, args.img_size, args.latent_dim)
+
+        if args.continue_train_from == '':
+            model = init_specific_model(args.model_type, args.img_size, args.latent_dim)
+        else:
+            base_dir = os.path.join(RES_DIR, args.continue_train_from)
+            model = load_model(base_dir, gpu_id=-1)  # will be send to GPU later
         logger.info('Num parameters in model: {}'.format(get_n_param(model)))
 
         # TRAINS
