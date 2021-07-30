@@ -20,6 +20,7 @@ if __name__ == "__main__":
     seed = 1234
     nlat = 64
     batchs = 64
+    lr = 1e-5
 
     datasets = ["dsprites", "celeba", "chairs"]
     alpha_gammas = [0.5, 1, 2]
@@ -37,7 +38,7 @@ if __name__ == "__main__":
         VAE_cmd = (
             f"python main.py qualitative/VAE_{data}_z{nlat} -s {seed} "
             f"--checkpoint-every 50 -d {data} -e {epochs} -b {batchs} "
-            f"-z {nlat} -l VAE "
+            f"-z {nlat} -l VAE --lr {lr} "
             f'--no-progress-bar -F {str(my_path / f"VAE_{data}_z{nlat}.out")} '
             f"--record-loss-every=50 --pin-dataset-gpu \n"
             f"python main_viz.py qualitative/VAE_{data}_z{nlat} "
@@ -49,7 +50,7 @@ if __name__ == "__main__":
         BTC_cmd = (
             f"python main.py qualitative/btcvae_{data}_z{nlat}_A{alpha_gamma}_B{beta}_G{alpha_gamma} -s {seed} "
             f"--checkpoint-every 50 -d {data} -e {epochs} -b {batchs} "
-            f"-z {nlat} -l btcvae --btcvae-A {alpha_gamma} --btcvae-B {beta} --btcvae-G {alpha_gamma} "
+            f"-z {nlat} -l btcvae --lr {lr} --btcvae-A {alpha_gamma} --btcvae-B {beta} --btcvae-G {alpha_gamma} "
             f'--no-progress-bar -F {str(my_path / f"btcvae_{data}_z{nlat}_A{alpha_gamma}_B{beta}_G{alpha_gamma}.out")} '
             f"--record-loss-every=50 --pin-dataset-gpu \n"
             f"python main_viz.py qualitative/btcvae_{data}_z{nlat}_A{alpha_gamma}_B{beta}_G{alpha_gamma} "
@@ -67,7 +68,7 @@ if __name__ == "__main__":
                 BTC_cmd = (
                     f"python main.py qualitative/btcvae_{data}_z{nlat}_A{alpha_gamma}_B{beta}_G{alpha_gamma} -s {seed} "
                     f"--checkpoint-every 50 -d {data} -e {epochs} -b {batchs} "
-                    f"-z {nlat} -l btcvae --btcvae-A {alpha_gamma} --btcvae-B {beta} --btcvae-G {alpha_gamma} "
+                    f"-z {nlat} -l btcvae --lr {lr} --btcvae-A {alpha_gamma} --btcvae-B {beta} --btcvae-G {alpha_gamma} "
                     f'--no-progress-bar -F {str(my_path / f"btcvae_{data}_z{nlat}_A{alpha_gamma}_B{beta}_G{alpha_gamma}.out")} '
                     f"--record-loss-every=50 --pin-dataset-gpu \n"
                     f"python main_viz.py qualitative/btcvae_{data}_z{nlat}_A{alpha_gamma}_B{beta}_G{alpha_gamma} "
