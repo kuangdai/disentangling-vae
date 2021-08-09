@@ -49,7 +49,7 @@ if __name__ == "__main__":
             cmd = (
                 f"python main.py qualitative/mepsvae_{data}_z{nlat}_epsA{eps_A}_epsB{eps_B}_epsG{eps_G} -s {seed} "
                 f"--checkpoint-every 50 -d {data} -e {epochs} -b {batchs} "
-                f"-z {nlat} -l mepsvae --lr {lr} --mepsvae-epsilon-alpha {eps_A} --mepsvae-epsilon-beta {eps_B} --mepsvae-epsilon-gamma {eps_G}"
+                f"-z {nlat} -l mepsvae --lr {lr} --mepsvae-epsilon-alpha {eps_A} --mepsvae-epsilon-beta {eps_B} --mepsvae-epsilon-gamma {eps_G} "
                 f'--no-progress-bar -F {str(my_path / f"mepsvae_{data}_z{nlat}_epsA{eps_A}_epsB{eps_B}_epsG{eps_G}.out")} '
                 f"--record-loss-every=50 --pin-dataset-gpu \n"
                 f"python main_viz.py qualitative/mepsvae_{data}_z{nlat}_epsA{eps_A}_epsB{eps_B}_epsG{eps_G} all -i {cherries} "
@@ -71,7 +71,7 @@ if __name__ == "__main__":
             cmd = (
                 f"python main.py qualitative/mepsvae_fromVAE_{data}_z{nlat}_epsA{eps_A}_epsB{eps_B}_epsG{eps_G} -s {seed} "
                 f"--checkpoint-every 50 -d {data} -e {epochs} -b {batchs} --mepsvae-warmup 0 --continue-train-from VAE_{data}_z64 "
-                f"-z {nlat} -l mepsvae --lr {lr} --mepsvae-epsilon-alpha {eps_A} --mepsvae-epsilon-beta {eps_B} --mepsvae-epsilon-gamma {eps_G}"
+                f"-z {nlat} -l mepsvae --lr {lr} --mepsvae-epsilon-alpha {eps_A} --mepsvae-epsilon-beta {eps_B} --mepsvae-epsilon-gamma {eps_G} "
                 f'--no-progress-bar -F {str(my_path / f"mepsvae_fromVAE_{data}_z{nlat}_epsA{eps_A}_epsB{eps_B}_epsG{eps_G}.out")} '
                 f"--record-loss-every=50 --pin-dataset-gpu \n"
                 f"python main_viz.py qualitative/mepsvae_fromVAE_{data}_z{nlat}_epsA{eps_A}_epsB{eps_B}_epsG{eps_G} all -i {cherries} "
