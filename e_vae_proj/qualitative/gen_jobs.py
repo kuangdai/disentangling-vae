@@ -37,19 +37,11 @@ if __name__ == "__main__":
     for data, epochs in zip(datasets, epochs_list):
 
         VAE_cmd = (
-<<<<<<< HEAD
             # f"python main.py qualitative/VAE_{data}_z{nlat} -s {seed} "
             # f"--checkpoint-every 50 -d {data} -e {epochs} -b {batchs} "
             # f"-z {nlat} -l VAE --lr {lr} "
             # f'--no-progress-bar -F {str(my_path / f"VAE_{data}_z{nlat}.out")} '
             # f"--record-loss-every=50 --pin-dataset-gpu \n"
-=======
-            f"python main.py qualitative/VAE_{data}_z{nlat} -s {seed} "
-            f"--checkpoint-every 50 -d {data} -e {epochs} -b {batchs} "
-            f"-z {nlat} -l VAE --lr {lr} "
-            f'--no-progress-bar -F {str(my_path / f"out/VAE_{data}_z{nlat}.out")} '
-            f"--record-loss-every=50 --pin-dataset-gpu \n"
->>>>>>> a23f20efcdb2b30a1d478cdc8684190e9dc5e691
             f"python main_viz.py qualitative/VAE_{data}_z{nlat} "
             f"all --is-show-loss --is-posterior -s {seed} --max-traversal {n_stddevs} \n"
         )
@@ -57,19 +49,11 @@ if __name__ == "__main__":
         alpha_gamma = 1
         beta = 1
         BTC_cmd = (
-<<<<<<< HEAD
             # f"python main.py qualitative/btcvae_{data}_z{nlat}_A{alpha_gamma}_B{beta}_G{alpha_gamma} -s {seed} "
             # f"--checkpoint-every 50 -d {data} -e {epochs} -b {batchs} "
             # f"-z {nlat} -l btcvae --lr {lr} --btcvae-A {alpha_gamma} --btcvae-B {beta} --btcvae-G {alpha_gamma} "
             # f'--no-progress-bar -F {str(my_path / f"btcvae_{data}_z{nlat}_A{alpha_gamma}_B{beta}_G{alpha_gamma}.out")} '
             # f"--record-loss-every=50 --pin-dataset-gpu \n"
-=======
-            f"python main.py qualitative/btcvae_{data}_z{nlat}_A{alpha_gamma}_B{beta}_G{alpha_gamma} -s {seed} "
-            f"--checkpoint-every 50 -d {data} -e {epochs} -b {batchs} "
-            f"-z {nlat} -l btcvae --lr {lr} --btcvae-A {alpha_gamma} --btcvae-B {beta} --btcvae-G {alpha_gamma} "
-            f'--no-progress-bar -F {str(my_path / f"out/btcvae_{data}_z{nlat}_A{alpha_gamma}_B{beta}_G{alpha_gamma}.out")} '
-            f"--record-loss-every=50 --pin-dataset-gpu \n"
->>>>>>> a23f20efcdb2b30a1d478cdc8684190e9dc5e691
             f"python main_viz.py qualitative/btcvae_{data}_z{nlat}_A{alpha_gamma}_B{beta}_G{alpha_gamma} "
             f"all --is-show-loss --is-posterior -s {seed} --max-traversal {n_stddevs} \n"
         )
@@ -83,19 +67,11 @@ if __name__ == "__main__":
             for beta in betas:
 
                 BTC_cmd = (
-<<<<<<< HEAD
                     # f"python main.py qualitative/btcvae_{data}_z{nlat}_A{alpha_gamma}_B{beta}_G{alpha_gamma} -s {seed} "
                     # f"--checkpoint-every 50 -d {data} -e {epochs} -b {batchs} "
                     # f"-z {nlat} -l btcvae --lr {lr} --btcvae-A {alpha_gamma} --btcvae-B {beta} --btcvae-G {alpha_gamma} "
                     # f'--no-progress-bar -F {str(my_path / f"btcvae_{data}_z{nlat}_A{alpha_gamma}_B{beta}_G{alpha_gamma}.out")} '
                     # f"--record-loss-every=50 --pin-dataset-gpu \n"
-=======
-                    f"python main.py qualitative/btcvae_{data}_z{nlat}_A{alpha_gamma}_B{beta}_G{alpha_gamma} -s {seed} "
-                    f"--checkpoint-every 50 -d {data} -e {epochs} -b {batchs} "
-                    f"-z {nlat} -l btcvae --lr {lr} --btcvae-A {alpha_gamma} --btcvae-B {beta} --btcvae-G {alpha_gamma} "
-                    f'--no-progress-bar -F {str(my_path / f"out/btcvae_{data}_z{nlat}_A{alpha_gamma}_B{beta}_G{alpha_gamma}.out")} '
-                    f"--record-loss-every=50 --pin-dataset-gpu \n"
->>>>>>> a23f20efcdb2b30a1d478cdc8684190e9dc5e691
                     f"python main_viz.py qualitative/btcvae_{data}_z{nlat}_A{alpha_gamma}_B{beta}_G{alpha_gamma} "
                     f"all --is-show-loss --is-posterior -s {seed} --max-traversal {n_stddevs} \n"
                 )
