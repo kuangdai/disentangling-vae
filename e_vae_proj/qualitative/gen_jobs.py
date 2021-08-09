@@ -16,9 +16,7 @@ if __name__ == "__main__":
 
     # hypars
     cons_list = ["kl", "rec"]
-    # debug
-    epochs_list = [1, 1, 1]
-    # epochs_list = [120, 800, 1200]
+    epochs_list = [120, 800, 1200]
     seed = 1234
     nlat = 64
     batchs = 64
@@ -60,7 +58,7 @@ if __name__ == "__main__":
         )
 
         with open(fname, 'a') as f:
-            f.write(VAE_cmd)
+            f.write(VAE_cmd + BTC_cmd)
 
     # beta-TCVAE
     for data, epochs in zip(datasets, epochs_list):
