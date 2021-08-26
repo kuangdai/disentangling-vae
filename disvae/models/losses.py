@@ -762,9 +762,8 @@ def linear_annealing(init, fin, step, annealing_steps):
     return annealed
 
 
-# Batch TC specific
-# TO-DO: test if mss is better!
-def _get_log_pz_qz_prodzi_qzCx(latent_sample, latent_dist, n_data, is_mss=True):
+def _get_log_pz_qz_prodzi_qzCx(latent_sample, latent_dist, n_data,
+                               is_mss=True):
     batch_size, hidden_dim = latent_sample.shape
 
     # calculate log q(z|x)
@@ -775,14 +774,87 @@ def _get_log_pz_qz_prodzi_qzCx(latent_sample, latent_dist, n_data, is_mss=True):
     zeros = torch.zeros_like(latent_sample)
     log_pz = log_density_gaussian(latent_sample, zeros, zeros).sum(1)
 
-    mat_log_qz = matrix_log_density_gaussian(latent_sample, *latent_dist)
+    if not is_mss:
+        log_qz, log_prod_qzi = _minibatch_weighted_sampling(latent_dist,
+                                                            latent_sample,
+                                                            n_data)
 
-    if is_mss:
-        # use stratification
-        log_iw_mat = log_importance_weight_matrix(batch_size, n_data).to(latent_sample.device)
-        mat_log_qz = mat_log_qz + log_iw_mat.view(batch_size, batch_size, 1)
-
-    log_qz = torch.logsumexp(mat_log_qz.sum(2), dim=1, keepdim=False)
-    log_prod_qzi = torch.logsumexp(mat_log_qz, dim=1, keepdim=False).sum(1)
+    else:
+        log_qz, log_prod_qzi = _minibatch_stratified_sampling(latent_dist,
+                                                              latent_sample,
+                                                              n_data)
 
     return log_pz, log_qz, log_prod_qzi, log_q_zCx
+
+
+def _minibatch_weighted_sampling(latent_dist, latent_sample, data_size):
+    """
+    Estimates log q(z) and the log (product of marginals of q(z_j)) with minibatch
+    weighted sampling.
+
+    Parameters
+    ----------
+    latent_dist : tuple of torch.tensor
+        sufficient statistics of the latent dimension. E.g. for gaussian
+        (mean, log_var) each of shape : (batch_size, latent_dim).
+
+    latent_sample: torch.Tensor
+        sample from the latent dimension using the reparameterisation trick
+        shape : (batch_size, latent_dim).
+
+    data_size : int
+        Number of data in the training set
+
+    References
+    -----------
+       [1] Chen, Tian Qi, et al. "Isolating sources of disentanglement in variational
+       autoencoders." Advances in Neural Information Processing Systems. 2018.
+    """
+    batch_size = latent_sample.size(0)
+
+    mat_log_qz = matrix_log_density_gaussian(latent_sample, *latent_dist)
+
+    log_prod_qzi = (torch.logsumexp(mat_log_qz, dim=1, keepdim=False) -
+                    math.log(batch_size * data_size)).sum(dim=1)
+    log_qz = torch.logsumexp(mat_log_qz.sum(2), dim=1, keepdim=False
+                             ) - math.log(batch_size * data_size)
+
+    return log_qz, log_prod_qzi
+
+
+def _minibatch_stratified_sampling(latent_dist, latent_sample, data_size):
+    """
+    Estimates log q(z) and the log (product of marginals of q(z_j)) with minibatch
+    stratified sampling.
+
+    Parameters
+    -----------
+    latent_dist : tuple of torch.tensor
+        sufficient statistics of the latent dimension. E.g. for gaussian
+        (mean, log_var) each of shape : (batch_size, latent_dim).
+
+    latent_sample: torch.Tensor
+        sample from the latent dimension using the reparameterisation trick
+        shape : (batch_size, latent_dim).
+
+    data_size : int
+        Number of data in the training set
+
+    References
+    -----------
+       [1] Chen, Tian Qi, et al. "Isolating sources of disentanglement in variational
+       autoencoders." Advances in Neural Information Processing Systems. 2018.
+    """
+    batch_size = latent_sample.size(0)
+
+    mat_log_qz = matrix_log_density_gaussian(latent_sample, *latent_dist)
+
+    log_iw_mat = log_importance_weight_matrix(batch_size, data_size).to(
+        latent_sample.device)
+    log_qz = torch.logsumexp(log_iw_mat + mat_log_qz.sum(2), dim=1,
+                             keepdim=False)
+    log_prod_qzi = torch.logsumexp(log_iw_mat.view(batch_size, batch_size, 1) +
+                                   mat_log_qz, dim=1, keepdim=False).sum(1)
+
+    return log_qz, log_prod_qzi
+
