@@ -360,10 +360,10 @@ class Evaluator:
         # sample from p(x)
         samples_x = torch.randperm(len_dataset, device=device)[:n_samples]
         # sample from p(z|x)
-        samples_zCx = samples_zCx.index_select(0, samples_x).view(latent_dim, n_samples)
+        samples_zCx = samples_zCx.index_select(0, samples_x).permute(1, 0)
 
         mini_batch_size = 5
-        samples_zCx = samples_zCx.expand(len_dataset, latent_dim, n_samples)
+        samples_zCx = samples_zCx.unsqueeze(0).expand(len_dataset, latent_dim, n_samples)
         mean = params_zCX[0].unsqueeze(-1).expand(len_dataset, latent_dim, n_samples)
         log_var = params_zCX[1].unsqueeze(-1).expand(len_dataset, latent_dim, n_samples)
         log_N = math.log(len_dataset)
