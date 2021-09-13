@@ -214,7 +214,7 @@ class LossesLogger(object):
         if os.path.isfile(file_path_name):
             os.remove(file_path_name)
 
-        self.logger = logging.getLogger("losses_logger")
+        self.logger = logging.getLogger(file_path_name)
         self.logger.setLevel(1)  # always store
         file_handler = logging.FileHandler(file_path_name)
         file_handler.setLevel(1)
