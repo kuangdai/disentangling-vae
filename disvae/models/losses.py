@@ -431,7 +431,7 @@ class EpsilonLoss(BaseLoss):
         self.lbd_lr0 = lbd_lr0
 
         # hardcoded
-        self.lbd_lr_decay_rate = 1e-3
+        self.lbd_lr_decay_rate = 1e-4
         self.lbd_lr_decay_step = 1.
 
         # to be updated in training
@@ -532,7 +532,7 @@ class MultiEpsilonLoss(BaseLoss):
         self.lbd_lr0 = lbd_lr0
 
         # hardcoded
-        self.lbd_lr_decay_rate = 1e-3
+        self.lbd_lr_decay_rate = 1e-4
         self.lbd_lr_decay_step = 1.
 
         # to be updated in training
